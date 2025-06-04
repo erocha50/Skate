@@ -1,9 +1,11 @@
-[gd_scene load_steps=12 format=3 uid="uid://b1k1opcerncst"]
+[gd_scene load_steps=15 format=3 uid="uid://b1k1opcerncst"]
 
 [ext_resource type="PackedScene" uid="uid://bkb0bgwpuuc4n" path="res://scenes/camera_controller.tscn" id="1_1lwx6"]
 [ext_resource type="PackedScene" uid="uid://bmr1d5gach4ip" path="res://scenes/player.tscn" id="2_dsnr4"]
 [ext_resource type="PackedScene" uid="uid://bjeyih3voierq" path="res://scenes/rails.tscn" id="3_lf0gk"]
-[ext_resource type="Texture2D" uid="uid://bgqjct0vhojr8" path="res://Metro_PSX/Metro_PSX/Textures/tile_tile.jpg" id="4_ynswa"]
+[ext_resource type="Texture2D" uid="uid://cr10cg87ah3bq" path="res://Metro_PSX/Metro_PSX/Textures/Tiles.png" id="4_dvny0"]
+[ext_resource type="Shader" uid="uid://dd2yfs856w3mr" path="res://building.gdshader" id="5_xwrkq"]
+[ext_resource type="Script" uid="uid://car72n7h721ub" path="res://scenes/node.gd" id="6_xwrkq"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1lwx6"]
 sky_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
@@ -21,13 +23,20 @@ glow_enabled = true
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_1lwx6"]
 friction = 0.0
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xwrkq"]
-albedo_texture = ExtResource("4_ynswa")
-uv1_scale = Vector3(5, 1, 10)
-texture_filter = 2
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_nrstc"]
+shader = ExtResource("5_xwrkq")
+shader_parameter/enabled = true
+shader_parameter/dithering = true
+shader_parameter/colors = 12
+shader_parameter/dither_size = 1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7448y"]
+next_pass = SubResource("ShaderMaterial_nrstc")
+albedo_texture = ExtResource("4_dvny0")
+uv1_triplanar = true
 
 [sub_resource type="BoxMesh" id="BoxMesh_cnaw2"]
-material = SubResource("StandardMaterial3D_xwrkq")
+material = SubResource("StandardMaterial3D_7448y")
 size = Vector3(96.09, 1, 12.62)
 
 [sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_kt6p6"]
@@ -43,27 +52,33 @@ shadow_enabled = true
 environment = SubResource("Environment_lf0gk")
 
 [node name="CameraController" parent="." node_paths=PackedStringArray("target") instance=ExtResource("1_1lwx6")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.81589, 0, 18.8105)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.81589, 0, 14.8105)
 target = NodePath("../Player")
 side_offset = Vector3(3.375, 3, 0)
 
 [node name="Player" parent="." instance=ExtResource("2_dsnr4")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.31006, 0, 0)
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -9.31006, 0, 0)
 mass = 2.0
 physics_material_override = SubResource("PhysicsMaterial_1lwx6")
+jump_force = 8.7
+max_fall_speed = 20.0
 mesh_tilt_speed = 100.0
 
 [node name="StaticBody3D" parent="." instance=ExtResource("3_lf0gk")]
-transform = Transform3D(0.995675, -0.0929093, 0, 0.0929093, 0.995675, 0, 0, 0, 1, 16.1217, -1.73331, 0)
+transform = Transform3D(0.999815, -0.0192672, 0, 0.0192672, 0.999815, 0, 0, 0, 1, 16.0222, -3.26965, 0.0943441)
 
 [node name="StaticBody3D2" type="StaticBody3D" parent="."]
+transform = Transform3D(2.51694, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D2"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.04443, 0)
+transform = Transform3D(0.30576, 0, 0, 0, 1, 0, 0, 0, 1, 5.19359, -5.04443, 0)
 mesh = SubResource("BoxMesh_cnaw2")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D2"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.04443, 0)
 shape = SubResource("ConcavePolygonShape3D_kt6p6")
+
+[node name="Node" type="Node" parent="."]
+script = ExtResource("6_xwrkq")
 
 [editable path="Player"]

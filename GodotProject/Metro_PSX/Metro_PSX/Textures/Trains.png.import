@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://brjvh0kck1fic"
-path.s3tc="res://.godot/imported/Trains.png-7cb111e9a68ac23c095f711ab6c39012.s3tc.ctex"
+path.s3tc="res://.godot/imported/Trains.png-f0430b564c05bae70a4040a932486d33.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://Metro_PSX/Metro_PSX/textures/Trains.png"
-dest_files=["res://.godot/imported/Trains.png-7cb111e9a68ac23c095f711ab6c39012.s3tc.ctex"]
+source_file="res://Metro_PSX/Metro_PSX/Textures/Trains.png"
+dest_files=["res://.godot/imported/Trains.png-f0430b564c05bae70a4040a932486d33.s3tc.ctex"]
 
 [params]
 

@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c4m7gq415iu2y"
-path.s3tc="res://.godot/imported/ConcreteBare.png-702e2819d443d2c6e9266299f24fcb3a.s3tc.ctex"
+path.s3tc="res://.godot/imported/ConcreteBare.png-6f7948a07bf48a9efd90ec643b7566fe.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://Metro_PSX/Metro_PSX/textures/ConcreteBare.png"
-dest_files=["res://.godot/imported/ConcreteBare.png-702e2819d443d2c6e9266299f24fcb3a.s3tc.ctex"]
+source_file="res://Metro_PSX/Metro_PSX/Textures/ConcreteBare.png"
+dest_files=["res://.godot/imported/ConcreteBare.png-6f7948a07bf48a9efd90ec643b7566fe.s3tc.ctex"]
 
 [params]
 

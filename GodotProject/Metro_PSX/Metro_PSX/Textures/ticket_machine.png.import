@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bjh3nte1yuo4"
-path.s3tc="res://.godot/imported/ticket_machine.png-447cecb27a0e43d6184b9404599cd3c6.s3tc.ctex"
+path.s3tc="res://.godot/imported/ticket_machine.png-36fa24a449a75cdb495a55d92815da24.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://Metro_PSX/Metro_PSX/textures/ticket_machine.png"
-dest_files=["res://.godot/imported/ticket_machine.png-447cecb27a0e43d6184b9404599cd3c6.s3tc.ctex"]
+source_file="res://Metro_PSX/Metro_PSX/Textures/ticket_machine.png"
+dest_files=["res://.godot/imported/ticket_machine.png-36fa24a449a75cdb495a55d92815da24.s3tc.ctex"]
 
 [params]
 
