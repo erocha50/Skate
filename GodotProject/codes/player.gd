@@ -4,6 +4,7 @@ extends RigidBody3D
 @export var move_speed: float = 15.0  # Standard speed for Sonic-like movement
 @export var rail_move_speed: float = 25.0  # Higher speed when on rails
 @export var jump_force: float = 10.0  # Higher for Mario-like jump height
+@export var freeze_jump_force: float = 6.0  # Weaker jump from freeze block
 @export var ground_gravity: float = 9.8
 @export var jump_gravity: float = 6.0  # Lower gravity for floaty Mario-like jumps
 @export var max_fall_speed: float = 15.0  # Cap falling speed
@@ -26,13 +27,17 @@ extends RigidBody3D
 var is_grounded: bool = false
 var is_on_rail: bool = false
 var ground_normal: Vector3 = Vector3.UP
-var move_input : float  = 0.0
+var move_input: float = 0.0
 
 # Dash variables
 var is_dashing: bool = false
 var dash_timer: float = 0.0
 var dash_cooldown_timer: float = 0.0
 var dash_direction: float = 0.0
+
+# Freeze block variables
+var is_frozen: bool = false
+var has_double_jumped: bool = false
 
 func _ready():
 	# Create and assign a PhysicsMaterial if none exists
@@ -48,6 +53,10 @@ func _ready():
 	axis_lock_angular_z = true
 
 func _physics_process(delta):
+	# Skip all physics if frozen
+	if is_frozen:
+		return
+		
 	# Update dash timers
 	if dash_cooldown_timer > 0:
 		dash_cooldown_timer -= delta
@@ -62,6 +71,10 @@ func _physics_process(delta):
 	is_grounded = ground_info.is_grounded
 	is_on_rail = ground_info.is_on_rail
 	ground_normal = ground_info.ground_normal
+
+	# Reset double jump when grounded
+	if is_grounded:
+		has_double_jumped = false
 
 	# Prevent rotation of the RigidBody3D
 	angular_velocity = Vector3.ZERO
@@ -96,22 +109,27 @@ func _physics_process(delta):
 	if Input.is_action_just_pressed("dash") and dash_cooldown_timer <= 0 and not is_dashing and not is_on_rail:
 		_start_dash()
 
-	# Handle movement
-	_handle_movement(delta)
-
 	# Handle jump
-	if Input.is_action_just_pressed("jump") and (is_grounded or is_on_rail):
+	if Input.is_action_just_pressed("jump") and is_grounded:
 		if is_on_rail:
-			# Rail jump: dash forward instead of jumping up
-			var rail_direction = sign(linear_velocity.x) if abs(linear_velocity.x) > 0.1 else 1.0
-			print("Rail jump - dashing forward")
-			apply_central_impulse(Vector3(rail_direction * dash_force * mass, jump_force * 0.3 * mass, 0))
-			ground_check.enabled = false
-			$Timer.start()
+			# Only allow jump at ledge
+			if is_at_rail_ledge():
+				# Rail jump: dash forward with stronger force
+				#var rail_direction = sign(linear_velocity.x) if abs(linear_velocity.x) > 0.1 else 1.0
+				# Use stronger horizontal force (1.5x dash_force) and moderate vertical force (0.5x jump_force)
+				print("Rail jump - powerful dash forward at ledge")
+				apply_central_impulse(Vector3.UP * jump_force )
+				ground_check.enabled = false
+				$Timer.start()
+			else:
+				print("Jump blocked - not at rail ledge")
 		else:
 			# Normal jump
 			print("Normal jump")
 			apply_central_impulse(Vector3(0, jump_force * mass, 0))
+
+	# Handle movement
+	_handle_movement(delta)
 
 	# Handle mesh tilt
 	_handle_mesh_tilt(delta)
@@ -185,7 +203,7 @@ func _handle_mesh_tilt(delta):
 	if player_mesh:
 		var target_rotation: Vector3
 		if is_on_rail:
-			target_rotation = Vector3(0,0.1,0)#basis.get_euler()
+			target_rotation = Vector3(0, 0.1, 0) #basis.get_euler()
 		elif is_dashing:
 			# Add slight tilt during dash for visual feedback
 			target_rotation = Vector3(0, 0, -dash_direction * 0.2)
@@ -196,7 +214,76 @@ func _handle_mesh_tilt(delta):
 		# Smoothly interpolate the mesh rotation
 		var current_rotation = player_mesh.rotation
 		player_mesh.rotation = Vector3(
-			0,0,lerp_angle(current_rotation.z, target_rotation.z, mesh_tilt_speed * delta))
+			0, 0, lerp_angle(current_rotation.z, target_rotation.z, mesh_tilt_speed * delta))
 
 func _on_timer_timeout() -> void:
 	ground_check.enabled = true
+
+func is_at_rail_ledge() -> bool:
+	# Enhanced ledge detection to avoid false positives at curves
+	# Use multiple raycasts to check if the rail continues ahead
+	var forward_distance = 1.0  # Distance to check ahead (adjust based on rail size)
+	var downward_offset = ground_check_distance  # Match ground check distance
+
+	# Primary forward raycast (in direction of movement)
+	var forward_check = RayCast3D.new()
+	forward_check.position = global_position + Vector3(sign(linear_velocity.x) * forward_distance, 0, 0)
+	forward_check.target_position = Vector3(0, -downward_offset, 0)
+	add_child(forward_check)
+	forward_check.force_raycast_update()
+	var forward_hit = forward_check.is_colliding() and forward_check.get_collider().is_in_group("Rail")
+	forward_check.queue_free()
+
+	# Secondary raycast slightly further to confirm rail end
+	var far_check = RayCast3D.new()
+	far_check.position = global_position + Vector3(sign(linear_velocity.x) * forward_distance * 1.5, 0, 0)
+	far_check.target_position = Vector3(0, -downward_offset, 0)
+	add_child(far_check)
+	far_check.force_raycast_update()
+	var far_hit = far_check.is_colliding() and far_check.get_collider().is_in_group("Rail")
+	far_check.queue_free()
+
+	# Check ground normal to detect sharp curves (curves have non-vertical normals)
+	var is_curve = abs(ground_normal.dot(Vector3.UP) - 1.0) > 0.1  # Allow small deviations
+
+	# Ledge is detected if primary raycast misses rail or both miss, and it's not a curve
+	var at_ledge = (!forward_hit || (!forward_hit && !far_hit)) && !is_curve
+	
+	if at_ledge:
+		print("Ledge detected")
+	else:
+		print("Not at ledge, possibly on curve: forward_hit=", forward_hit, ", far_hit=", far_hit, ", is_curve=", is_curve)
+	
+	return at_ledge
+
+# Called by FreezeBlock when touched in midair
+func trigger_freeze_jump():
+	if not is_grounded and not has_double_jumped:
+		print("Freeze block triggered!")
+		has_double_jumped = true
+		
+		# Freeze the entire game
+		is_frozen = true
+		get_tree().paused = true
+		
+		# Create a timer for the freeze duration
+		var freeze_timer = Timer.new()
+		freeze_timer.wait_time = 0.5
+		freeze_timer.one_shot = true
+		freeze_timer.process_mode = Node.PROCESS_MODE_ALWAYS  # Continue during pause
+		add_child(freeze_timer)
+		freeze_timer.timeout.connect(_on_freeze_timeout)
+		freeze_timer.start()
+
+func _on_freeze_timeout():
+	# Unfreeze and apply the weaker jump
+	get_tree().paused = false
+	is_frozen = false
+	
+	# Apply weaker jump force
+	apply_central_impulse(Vector3(0, freeze_jump_force * mass, 0))
+	print("Freeze jump executed!")
+	
+	# Clean up the timer
+	if has_node("Timer2"):
+		$Timer2.queue_free()
