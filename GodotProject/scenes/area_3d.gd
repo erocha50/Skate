@@ -1,5 +1,5 @@
 extends Area3D
-class_name FreezeBlock
+class_name FreezeBlocks
 
 @onready var mesh_instance: MeshInstance3D = $MeshInstance3D
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D

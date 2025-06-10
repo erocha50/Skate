@@ -1,5 +1,13 @@
 extends RigidBody3D
 
+# Scoring signals
+signal rail_grind_started
+signal rail_grind_ended  
+signal freeze_block_used
+signal dash_performed
+signal player_became_airborne
+signal player_landed
+
 # Movement parameters
 @export var move_speed: float = 15.0  # Standard speed for Sonic-like movement
 @export var rail_move_speed: float = 25.0  # Higher speed when on rails
@@ -39,66 +47,9 @@ var dash_direction: float = 0.0
 var is_frozen: bool = false
 var has_double_jumped: bool = false
 
-# Scoring signals
-signal started_rail_grind
-signal ended_rail_grind
-signal used_freeze_block
-signal performed_dash
-signal became_airborne
-signal landed
-
-# Add these variables to track state changes
+# Signal tracking variables
 var was_grounded_last_frame: bool = false
 var was_on_rail_last_frame: bool = false
-
-# Modify your _physics_process function to include these signal emissions:
-
-func _physics_process(delta):
-	# ... existing code ...
-	
-	# Check if grounded and on rail
-	var ground_info = _check_grounded()
-	is_grounded = ground_info.is_grounded
-	is_on_rail = ground_info.is_on_rail
-	ground_normal = ground_info.ground_normal
-
-	# Emit airborne/landing signals
-	if was_grounded_last_frame and not is_grounded:
-		became_airborne.emit()
-	elif not was_grounded_last_frame and is_grounded:
-		landed.emit()
-	
-	# Emit rail grind signals
-	if not was_on_rail_last_frame and is_on_rail:
-		started_rail_grind.emit()
-	elif was_on_rail_last_frame and not is_on_rail:
-		ended_rail_grind.emit()
-	
-	# Store states for next frame
-	was_grounded_last_frame = is_grounded
-	was_on_rail_last_frame = is_on_rail
-	
-	# ... rest of existing code ...
-
-# Modify your _start_dash function to emit the signal:
-func _start_dash():
-	# ... existing code ...
-	
-	# Emit dash signal for scoring
-	performed_dash.emit()
-	
-	print("Dash started! Direction: ", dash_direction)
-
-# Modify your trigger_freeze_jump function to emit the signal:
-func trigger_freeze_jump():
-	if not is_grounded and not has_double_jumped:
-		print("Freeze block triggered!")
-		has_double_jumped = true
-		
-		# Emit freeze block signal for scoring
-		used_freeze_block.emit()
-		
-		# ... rest of existing code ...
 
 func _ready():
 	# Create and assign a PhysicsMaterial if none exists
@@ -132,6 +83,26 @@ func _physics_process(delta):
 	is_grounded = ground_info.is_grounded
 	is_on_rail = ground_info.is_on_rail
 	ground_normal = ground_info.ground_normal
+
+	# Emit scoring signals
+	if was_grounded_last_frame and not is_grounded:
+		player_became_airborne.emit()
+		print("emitting player became airborne")
+	elif not was_grounded_last_frame and is_grounded:
+		player_landed.emit()
+		print("emitting player landed")
+	
+	if not was_on_rail_last_frame and is_on_rail:
+		rail_grind_started.emit()
+		print("emitting  rail grind started")
+		
+	elif was_on_rail_last_frame and not is_on_rail:
+		rail_grind_ended.emit()
+		print("emitting rail grind ended")
+	
+	# Store states for next frame
+	was_grounded_last_frame = is_grounded
+	was_on_rail_last_frame = is_on_rail
 
 	# Reset double jump when grounded
 	if is_grounded:
@@ -176,9 +147,7 @@ func _physics_process(delta):
 			# Only allow jump at ledge
 			if is_at_rail_ledge():
 				# Rail jump: dash forward with stronger force
-				#var rail_direction = sign(linear_velocity.x) if abs(linear_velocity.x) > 0.1 else 1.0
-				# Use stronger horizontal force (1.5x dash_force) and moderate vertical force (0.5x jump_force)
-				print("Rail jump - powerful dash forward at ledge")
+				#print("Rail jump - powerful dash forward at ledge")
 				apply_central_impulse(Vector3.UP * jump_force )
 				ground_check.enabled = false
 				$Timer.start()
@@ -186,7 +155,7 @@ func _physics_process(delta):
 				print("Jump blocked - not at rail ledge")
 		else:
 			# Normal jump
-			print("Normal jump")
+			#print("Normal jump")
 			apply_central_impulse(Vector3(0, jump_force * mass, 0))
 
 	# Handle movement
@@ -201,8 +170,6 @@ func _start_dash():
 	if abs(input_dir) > 0.1:
 		dash_direction = input_dir
 	else:
-		# If no input, dash in the direction the player is facing
-		# or default to right if no clear direction
 		dash_direction = 1.0 if linear_velocity.x >= 0 else -1.0
 	
 	# Start dash
@@ -213,7 +180,10 @@ func _start_dash():
 	# Apply dash force
 	apply_central_impulse(Vector3(dash_direction * dash_force * mass, 0, 0))
 	
-	print("Dash started! Direction: ", dash_direction)
+	# Emit dash signal for scoring
+	dash_performed.emit()
+	
+	#print("Dash started! Direction: ", dash_direction)
 
 func _check_grounded() -> Dictionary:
 	var result = {"is_grounded": false, "is_on_rail": false, "ground_normal": Vector3.UP}
@@ -228,7 +198,7 @@ func _check_grounded() -> Dictionary:
 func _handle_movement(delta):
 	# Get input (don't override movement during dash)
 	if is_grounded and not is_on_rail and not is_dashing:
-		print("checking input")
+		#print("checking input")
 		move_input = Input.get_axis("move_left", "move_right")
 	elif is_dashing:
 		# During dash, reduce player control
@@ -264,7 +234,7 @@ func _handle_mesh_tilt(delta):
 	if player_mesh:
 		var target_rotation: Vector3
 		if is_on_rail:
-			target_rotation = Vector3(0, 0.1, 0) #basis.get_euler()
+			target_rotation = Vector3(0, 0.1, 0)
 		elif is_dashing:
 			# Add slight tilt during dash for visual feedback
 			target_rotation = Vector3(0, 0, -dash_direction * 0.2)
@@ -282,9 +252,8 @@ func _on_timer_timeout() -> void:
 
 func is_at_rail_ledge() -> bool:
 	# Enhanced ledge detection to avoid false positives at curves
-	# Use multiple raycasts to check if the rail continues ahead
-	var forward_distance = 1.0  # Distance to check ahead (adjust based on rail size)
-	var downward_offset = ground_check_distance  # Match ground check distance
+	var forward_distance = 1.0
+	var downward_offset = ground_check_distance
 
 	# Primary forward raycast (in direction of movement)
 	var forward_check = RayCast3D.new()
@@ -305,7 +274,7 @@ func is_at_rail_ledge() -> bool:
 	far_check.queue_free()
 
 	# Check ground normal to detect sharp curves (curves have non-vertical normals)
-	var is_curve = abs(ground_normal.dot(Vector3.UP) - 1.0) > 0.1  # Allow small deviations
+	var is_curve = abs(ground_normal.dot(Vector3.UP) - 1.0) > 0.1
 
 	# Ledge is detected if primary raycast misses rail or both miss, and it's not a curve
 	var at_ledge = (!forward_hit || (!forward_hit && !far_hit)) && !is_curve
@@ -322,6 +291,9 @@ func trigger_freeze_jump():
 	if not is_grounded and not has_double_jumped:
 		print("Freeze block triggered!")
 		has_double_jumped = true
+		
+		# Emit freeze block signal for scoring
+		freeze_block_used.emit()
 		
 		# Freeze the entire game
 		is_frozen = true
