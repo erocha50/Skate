@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://b1k1opcerncst"]
+[gd_scene load_steps=22 format=3 uid="uid://b1k1opcerncst"]
 
 [ext_resource type="PackedScene" uid="uid://bkb0bgwpuuc4n" path="res://scenes/camera_controller.tscn" id="1_1lwx6"]
 [ext_resource type="Shader" uid="uid://p071tuygxbtu" path="res://scenes/test_world.gdshader" id="1_dvny0"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" uid="uid://car72n7h721ub" path="res://scenes/node.gd" id="6_xwrkq"]
 [ext_resource type="PackedScene" uid="uid://vhe1h3wglknj" path="res://scenes/freezeblocks.tscn" id="7_xwrkq"]
 [ext_resource type="PackedScene" uid="uid://cfaqvg4g1tf74" path="res://scenes/score_ui.tscn" id="8_nrstc"]
+[ext_resource type="Shader" uid="uid://cmqxs1gqjwul1" path="res://editlater.gdshader" id="9_7448y"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_xwrkq"]
 shader = ExtResource("1_dvny0")
@@ -52,6 +53,10 @@ size = Vector3(39.815, 0.5, 0.5)
 [sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_7448y"]
 data = PackedVector3Array(-19.9075, 0.25, -0.25, -19.9075, -0.25, -0.25, 19.9075, -0.25, -0.25, -19.9075, 0.25, 0.25, -19.9075, -0.25, 0.25, -19.9075, -0.25, -0.25, -19.9075, -0.25, 0.25, 19.9075, -0.25, 0.25, -19.9075, -0.25, -0.25, -19.9075, 0.25, -0.25, -19.9075, 0.25, 0.25, -19.9075, -0.25, -0.25, -19.9075, 0.25, 0.25, -19.9075, 0.25, -0.25, 19.9075, 0.25, -0.25, -19.9075, 0.25, 0.25, 19.9075, 0.25, 0.25, -19.9075, -0.25, 0.25, 19.9075, -0.25, 0.25, 19.9075, -0.25, -0.25, -19.9075, -0.25, -0.25, 19.9075, 0.25, -0.25, 19.9075, -0.25, -0.25, 19.9075, -0.25, 0.25, 19.9075, 0.25, 0.25, 19.9075, -0.25, 0.25, -19.9075, -0.25, 0.25, 19.9075, 0.25, -0.25, -19.9075, 0.25, -0.25, 19.9075, -0.25, -0.25, 19.9075, 0.25, 0.25, -19.9075, 0.25, 0.25, 19.9075, 0.25, -0.25, 19.9075, 0.25, 0.25, 19.9075, 0.25, -0.25, 19.9075, -0.25, 0.25)
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ar7ra"]
+shader = ExtResource("9_7448y")
+shader_parameter/noise_intensity = 0.049
+
 [node name="SubViewportContainer" type="SubViewportContainer"]
 material = SubResource("ShaderMaterial_xwrkq")
 anchors_preset = 15
@@ -77,7 +82,7 @@ environment = SubResource("Environment_lf0gk")
 [node name="CameraController" parent="SubViewport/TestWorld" node_paths=PackedStringArray("target") instance=ExtResource("1_1lwx6")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.81589, -1.46062, 8.90183)
 target = NodePath("../Player")
-side_offset = Vector3(3.375, 3, 0)
+side_distance = 8.0
 
 [node name="Player" parent="SubViewport/TestWorld" instance=ExtResource("2_dsnr4")]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -9.31006, 0, 0)
@@ -130,5 +135,13 @@ shape = SubResource("ConcavePolygonShape3D_7448y")
 
 [node name="StaticBody3D" parent="." instance=ExtResource("3_lf0gk")]
 transform = Transform3D(0.856646, -0.515905, 0, 0.515905, 0.856646, 0, 0, 0, 1, 68.2101, 8.12791, 0.230364)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer"]
+material = SubResource("ShaderMaterial_ar7ra")
+offset_left = -2.0
+offset_right = 1151.0
+offset_bottom = 646.0
 
 [editable path="SubViewport/TestWorld/Player"]
