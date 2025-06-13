@@ -1,0 +1,40 @@
+[gd_scene load_steps=2 format=3 uid="uid://cfaqvg4g1tf74"]
+
+[ext_resource type="Script" uid="uid://ubuq86bkx701" path="res://score_ui.gd" id="1_hoy1o"]
+
+[node name="ScoreUI" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 320.0
+offset_bottom = 420.0
+script = ExtResource("1_hoy1o")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="RankLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 72
+text = "FUMBLE"
+horizontal_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "0"
+horizontal_alignment = 1
+
+[node name="ActionLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1
+
+[node name="ComboLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.545098, 0, 1)
+theme_override_font_sizes/font_size = 20
