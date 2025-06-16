@@ -1,7 +1,8 @@
-[gd_scene load_steps=20 format=3 uid="uid://b1k1opcerncst"]
+[gd_scene load_steps=21 format=3 uid="uid://b1k1opcerncst"]
 
 [ext_resource type="PackedScene" uid="uid://bkb0bgwpuuc4n" path="res://scenes/camera_controller.tscn" id="1_1lwx6"]
 [ext_resource type="Shader" uid="uid://p071tuygxbtu" path="res://scenes/test_world.gdshader" id="1_dvny0"]
+[ext_resource type="Script" uid="uid://eseww4i03svg" path="res://scenes/test_world.gd" id="2_7448y"]
 [ext_resource type="PackedScene" uid="uid://bmr1d5gach4ip" path="res://scenes/player.tscn" id="2_dsnr4"]
 [ext_resource type="PackedScene" uid="uid://bjeyih3voierq" path="res://scenes/rails.tscn" id="3_lf0gk"]
 [ext_resource type="Texture2D" uid="uid://b8thbqivcxa65" path="res://Metro_PSX/Metro_PSX/Textures/Floor.png" id="4_ynswa"]
@@ -66,6 +67,7 @@ size = Vector2i(1152, 648)
 render_target_update_mode = 4
 
 [node name="TestWorld" type="Node3D" parent="SubViewport"]
+script = ExtResource("2_7448y")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="SubViewport/TestWorld"]
 transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75, -0.433013, 0, 0, 0)
@@ -77,7 +79,10 @@ environment = SubResource("Environment_lf0gk")
 [node name="CameraController" parent="SubViewport/TestWorld" node_paths=PackedStringArray("target") instance=ExtResource("1_1lwx6")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.81589, -1.46062, 8.90183)
 target = NodePath("../Player")
-side_offset = Vector3(3.375, 3, 0)
+rotation_speed = -3.0
+camera_distance_x = 0.0
+camera_distance_y = 0.0
+camera_distance_z = 10.0
 
 [node name="Player" parent="SubViewport/TestWorld" instance=ExtResource("2_dsnr4")]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -9.31006, 0, 0)
@@ -98,9 +103,6 @@ surface_material_override/0 = SubResource("StandardMaterial3D_dvny0")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.19359, -5.04443, 0)
 shape = SubResource("ConcavePolygonShape3D_nrstc")
 
-[node name="Node" type="Node" parent="SubViewport/TestWorld"]
-script = ExtResource("6_xwrkq")
-
 [node name="StaticBody3D3" type="StaticBody3D" parent="SubViewport/TestWorld" groups=["Rail", "rails"]]
 transform = Transform3D(1, 0, 0, 0, -1, 8.74228e-08, 0, -8.74228e-08, -1, -41.5093, -3.41942, 0.136261)
 physics_material_override = SubResource("PhysicsMaterial_nrstc")
@@ -110,6 +112,53 @@ mesh = SubResource("BoxMesh_dvny0")
 
 [node name="CSGBakedCollisionShape3D" type="CollisionShape3D" parent="SubViewport/TestWorld/StaticBody3D3"]
 shape = SubResource("ConcavePolygonShape3D_7448y")
+
+[node name="Node" type="Node" parent="SubViewport/TestWorld"]
+script = ExtResource("6_xwrkq")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="SubViewport/TestWorld/Node"]
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SubViewport/TestWorld/Node/CanvasLayer"]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="ResumeButton" type="Button" parent="SubViewport/TestWorld/Node/CanvasLayer/VBoxContainer"]
+layout_mode = 2
+text = "RESUME"
+
+[node name="MenuButton" type="Button" parent="SubViewport/TestWorld/Node/CanvasLayer/VBoxContainer"]
+layout_mode = 2
+text = "MENU"
+
+[node name="QuitButton" type="Button" parent="SubViewport/TestWorld/Node/CanvasLayer/VBoxContainer"]
+layout_mode = 2
+text = "QUIT"
+
+[node name="MenuCamera3D" type="Camera3D" parent="SubViewport/TestWorld"]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="SubViewport/TestWorld"]
+
+[node name="MainMenuController" type="VBoxContainer" parent="SubViewport/TestWorld/CanvasLayer"]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SubViewport/TestWorld/CanvasLayer/MainMenuController"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="SubViewport/TestWorld/CanvasLayer/MainMenuController/VBoxContainer"]
+layout_mode = 2
+
+[node name="PlayButton" type="Button" parent="SubViewport/TestWorld/CanvasLayer/MainMenuController/VBoxContainer"]
+layout_mode = 2
+text = "PLAY"
+
+[node name="SettingButton2" type="Button" parent="SubViewport/TestWorld/CanvasLayer/MainMenuController/VBoxContainer"]
+layout_mode = 2
+text = "SETTING"
+
+[node name="QuitButton3" type="Button" parent="SubViewport/TestWorld/CanvasLayer/MainMenuController/VBoxContainer"]
+layout_mode = 2
+text = "QUIT"
 
 [node name="Freezeblocks" parent="." instance=ExtResource("7_xwrkq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.2767, -0.960316, 0.39393)
