@@ -1,61 +1,129 @@
 extends Control
 class_name ScoreUI
 
-# Score thresholds for different ranks
-const RANK_THRESHOLDS = {
-	"DOG": 0,
-	"COOL": 100,
-	"BETTER": 300,
-	"AWESOME": 600,
-	"SKATZ": 1000
+# Trick difficulty colors and multipliers
+const TRICK_COLORS = {
+	"EASY": Color.GREEN,
+	"MEDIUM": Color.ORANGE, 
+	"HARD": Color.RED,
+	"INSANE": Color.PURPLE
 }
 
-# Score values for different actions
-const SCORE_VALUES = {
-	"RAIL_GRIND": 15,        # Points per second while grinding
-	"RAIL_GRIND_COMBO": 5,   # Bonus points for extended grinding
-	"FREEZE_BLOCK": 50,      # One-time bonus for using freeze block
-	"DASH": 25,              # Points for dashing
-	"AIR_TIME": 5,           # Points per second in air
-	"COMBO_MULTIPLIER": 1.5, # Multiplier for combo actions
-	"STYLE_BONUS": 10        # Bonus for varied tricks
+const TRICK_MULTIPLIERS = {
+	"EASY": 1.0,
+	"MEDIUM": 1.5,
+	"HARD": 2.0,
+	"INSANE": 3.0
 }
-@export var player : RigidBody3D
-# UI References
-@onready var rank_label: Label = $VBoxContainer/RankLabel
-@onready var score_label: Label = $VBoxContainer/ScoreLabel
-@onready var action_label: Label = $VBoxContainer/ActionLabel
-@onready var combo_label: Label = $VBoxContainer/ComboLabel
-@onready var style_meter: ProgressBar = $VBoxContainer/StyleMeter
+
+# Maximum multiplier cap
+const MAX_MULTIPLIER = 3.0
+
+# Trick classifications (using var instead of const so we can modify it)
+var trick_difficulty = {
+	"RAIL_GRIND": "EASY",
+	"FREEZE_BLOCK": "MEDIUM",
+	"DASH": "EASY",
+	"AIR_TIME": "EASY",
+	"LONG_GRIND": "HARD",
+	"AIR_TIME_BONUS": "MEDIUM",
+	"COMBO_TRICK": "HARD",
+	"STYLE_COMBO": "INSANE"
+}
+
+# Score thresholds for progress bar segments
+const PROGRESS_THRESHOLDS = [100, 300, 600, 1000, 1500, 2500, 4000, 6000, 10000]
+
+# Grade names corresponding to each threshold
+const GRADE_NAMES = ["D", "C", "B", "A", "S", "U"]
+
+# Grade colors for visual feedback
+const GRADE_COLORS = {
+	"D": Color.GRAY,
+	"C": Color.GREEN,
+	"B": Color.BLUE,
+	"A": Color.YELLOW,
+	"S": Color.RED,
+	"U": Color.CYAN
+}
+
+@export var player: RigidBody3D
+
+# UI References - Updated for new layout
+@onready var main_container: Control = $MainContainer
+@onready var progress_bar: ProgressBar = $MainContainer/ProgressContainer/ScoreProgress
+@onready var progress_label: RichTextLabel = $MainContainer/ProgressContainer/ProgressLabel
+@onready var score_container: Control = $MainContainer/ScoreContainer
+@onready var score_label: Label = $MainContainer/ScoreContainer/ScoreLabel
+@onready var score_multiplier: Label = $MainContainer/ScoreContainer/ScoreMultiplier
+@onready var multiplier_label: Label = $MainContainer/MultiplierContainer/MultiplierLabel
+@onready var trick_display: VBoxContainer = $MainContainer/TrickContainer
+@onready var combo_container: Control = $MainContainer/ComboContainer
+@onready var combo_label: Label = $MainContainer/ComboContainer/ComboLabel
+@onready var combo_multiplier: Label = $MainContainer/ComboContainer/ComboMultiplier
 
 # Score tracking
 var current_score: int = 0
-var current_rank: String = "D"
+var progress_level: int = 0
 var combo_count: int = 0
 var combo_timer: float = 0.0
-var combo_timeout: float = 3.0  # Combo breaks after 3 seconds
+var combo_timeout: float = 3.0
+var current_multiplier: float = 1.0
 
-# Action tracking
-var last_action: String = ""
-var action_timer: float = 0.0
-var grind_timer: float = 0.0
-var air_timer: float = 0.0
-var style_variety: Array[String] = []
-var style_decay_timer: float = 0.0
+# Trick tracking
+var active_tricks: Array[Dictionary] = []
+var trick_sequence: Array[String] = []
+var last_trick_time: float = 0.0
 
 # Visual effects
-var rank_tween: Tween
 var score_tween: Tween
-var action_fade_timer: float = 0.0
+var combo_tween: Tween
+var trick_display_timer: float = 0.0
 
 func _ready():
-	# Initialize UI
-	_update_ui()
+	_setup_ui_style()
+	_initialize_progress_bar()
+	_connect_player_signals()
+	_update_display()
+
+func _setup_ui_style():
+	# Apply slanted/skewed transform to main container
+	if main_container:
+		main_container.rotation_degrees = -5.0  # Slight rotation for dynamic feel
 	
-	# Connect to player signals
-	#var player = get_node("../Player")  # Adjust path as needed
+	# Set up progress bar styling
+	if progress_bar:
+		progress_bar.show_percentage = false
+		progress_bar.max_value = 100
+		progress_bar.value = 0
+	
+	# Enable BBCode for the progress label (if using RichTextLabel)
+	if progress_label is RichTextLabel:
+		progress_label.bbcode_enabled = true
+		# Make the text bigger and fit properly
+		progress_label.fit_content = true
+		progress_label.add_theme_font_size_override("normal_font_size", 64)
+	
+	# Style the combo container
+	if combo_container:
+		combo_container.modulate = Color.TRANSPARENT
+	
+	# Style the score container
+	if score_container:
+		score_container.modulate = Color.WHITE
+	
+	# Apply skew effect to containers (simulated with rotation)
+	if progress_bar and progress_bar.get_parent():
+		progress_bar.get_parent().rotation_degrees = 2.0
+	if multiplier_label and multiplier_label.get_parent():
+		multiplier_label.get_parent().rotation_degrees = -3.0
+
+func _initialize_progress_bar():
+	progress_level = 0
+	_update_progress_bar()
+
+func _connect_player_signals():
 	if player:
-		# Connect the renamed signals
 		if player.has_signal("rail_grind_started"):
 			player.rail_grind_started.connect(_on_rail_grind_started)
 		if player.has_signal("rail_grind_ended"):
@@ -70,217 +138,321 @@ func _ready():
 			player.player_landed.connect(_on_landed)
 
 func _process(delta):
-	# Update timers
-	_update_timers(delta)
-	
-	# Update combo system
-	_update_combo_system(delta)
-	
-	# Update UI
-	_update_ui()
-	
-	# Handle action label fade
-	if action_fade_timer > 0:
-		action_fade_timer -= delta
-		var alpha = action_fade_timer / 2.0
-		action_label.modulate.a = alpha
+	_update_combo_timer(delta)
+	_update_trick_displays(delta)
+	_update_multiplier_display()
+	_update_score_display()
 
-func _update_timers(delta):
-	# Combo timer
+func _update_combo_timer(delta):
 	if combo_timer > 0:
 		combo_timer -= delta
 		if combo_timer <= 0:
-			_reset_combo()
-	
-	# Style variety decay
-	if style_decay_timer > 0:
-		style_decay_timer -= delta
-		if style_decay_timer <= 0:
-			_decay_style_variety()
-	
-	# Grind scoring
-	if grind_timer > 0:
-		grind_timer += delta
-		_add_score_continuous("RAIL_GRIND", delta)
-	
-	# Air time scoring
-	if air_timer > 0:
-		air_timer += delta
-		_add_score_continuous("AIR_TIME", delta)
+			_end_combo()
 
-func _update_combo_system(delta):
-	# Update combo timeout
-	if combo_count > 0 and combo_timer <= 0:
-		_reset_combo()
+func _update_trick_displays(delta):
+	# Update active trick displays
+	for i in range(active_tricks.size() - 1, -1, -1):
+		active_tricks[i].timer -= delta
+		if active_tricks[i].timer <= 0:
+			_remove_trick_display(i)
 
-func _add_score(action: String, base_points: int = 0):
-	var points = base_points if base_points > 0 else SCORE_VALUES.get(action, 0)
+func _update_multiplier_display():
+	if not multiplier_label:
+		return
+		
+	# Calculate current multiplier based on combo and recent tricks (made harder)
+	var base_multiplier = 1.0 + (combo_count * 0.2)  # Reduced from +0.5x to +0.2x per combo
+	var trick_multiplier = _calculate_trick_multiplier()
+	current_multiplier = base_multiplier * trick_multiplier
 	
-	# Apply combo multiplier
-	if combo_count > 1:
-		points = int(points * (1.0 + (combo_count - 1) * 0.2))  # 20% bonus per combo level
+	# Cap the multiplier at MAX_MULTIPLIER
+	current_multiplier = min(current_multiplier, MAX_MULTIPLIER)
 	
-	# Apply style variety bonus
-	var style_bonus = _get_style_bonus()
-	points += style_bonus
+	multiplier_label.text = "x" + ("%.1f" % current_multiplier)
 	
-	current_score += points
-	_update_rank()
-	
-	# Update combo
-	_extend_combo()
-	_add_to_style_variety(action)
-	
-	# Show action feedback
-	_show_action_feedback(action, points)
-	
-	print("Score added: ", points, " for ", action, " (Total: ", current_score, ")")
+	# Color based on multiplier level
+	if current_multiplier >= MAX_MULTIPLIER:
+		multiplier_label.modulate = TRICK_COLORS["INSANE"]
+	elif current_multiplier >= 2.5:
+		multiplier_label.modulate = TRICK_COLORS["HARD"]
+	elif current_multiplier >= 1.5:
+		multiplier_label.modulate = TRICK_COLORS["MEDIUM"]
+	else:
+		multiplier_label.modulate = TRICK_COLORS["EASY"]
 
-func _add_score_continuous(action: String, delta: float):
-	var points_per_second = SCORE_VALUES.get(action, 0)
-	var points = points_per_second * delta
+func _calculate_trick_multiplier() -> float:
+	var multiplier = 1.0
+	var recent_time = 5.0  # Consider tricks from last 5 seconds
+	var current_time = Time.get_ticks_msec() / 1000.0
 	
-	# Add combo bonus for extended actions
-	if action == "RAIL_GRIND" and grind_timer > 2.0:
-		points += SCORE_VALUES.get("RAIL_GRIND_COMBO", 0) * delta
+	for trick in trick_sequence:
+		if current_time - last_trick_time < recent_time:
+			var difficulty = trick_difficulty.get(trick, "EASY")
+			multiplier += (TRICK_MULTIPLIERS[difficulty] - 1.0) * 0.15  # Reduced from 0.3 to 0.15
 	
-	current_score += int(points)
-	_update_rank()
+	return multiplier
 
-func _extend_combo():
+func _add_score_for_trick(trick_name: String, base_points: int):
+	var difficulty = trick_difficulty.get(trick_name, "EASY")
+	
+	# Add base points to score (not affected by multiplier)
+	current_score += base_points
+	_add_to_combo(trick_name)
+	_display_trick_score(trick_name, base_points, difficulty)
+	_update_progress_bar()
+	
+	# Add to trick sequence for style tracking
+	trick_sequence.append(trick_name)
+	last_trick_time = Time.get_ticks_msec() / 1000.0
+	
+	# Limit sequence length
+	if trick_sequence.size() > 10:
+		trick_sequence.pop_front()
+
+func _add_to_combo(trick_name: String):
 	combo_count += 1
 	combo_timer = combo_timeout
-	combo_label.text = "COMBO x" + str(combo_count)
-	
-	# Visual effect for combo
-	if combo_count > 1:
-		_animate_combo_label()
+	_update_combo_display()
+	_animate_combo()
 
-func _reset_combo():
+func _end_combo():
+	if combo_count > 1:
+		# Bonus points for combo
+		var combo_bonus = combo_count * combo_count * 10  # Exponential bonus
+		current_score += combo_bonus
+		_display_combo_bonus(combo_bonus)
+	
 	combo_count = 0
 	combo_timer = 0.0
-	combo_label.text = ""
+	_update_combo_display()
+	_fade_out_combo()
 
-func _add_to_style_variety(action: String):
-	if not style_variety.has(action):
-		style_variety.append(action)
-		style_decay_timer = 10.0  # Reset style variety after 10 seconds
-		_update_style_meter()
-
-func _decay_style_variety():
-	if style_variety.size() > 0:
-		style_variety.pop_front()
-		_update_style_meter()
-		if style_variety.size() > 0:
-			style_decay_timer = 10.0
-
-func _get_style_bonus() -> int:
-	return style_variety.size() * SCORE_VALUES.get("STYLE_BONUS", 0)
-
-func _update_style_meter():
-	var style_value = min(style_variety.size() * 25, 100)  # Max 4 different actions = 100%
-
-func _update_rank():
-	var new_rank = "D"
-	for rank in ["SKATZ", "AWESOME", "BETTER", "COOL", "DOG"]:  # Check from highest to lowest
-		if current_score >= RANK_THRESHOLDS[rank]:
-			new_rank = rank
-			break
-	
-	if new_rank != current_rank:
-		current_rank = new_rank
-		_animate_rank_change()
-
-func _update_ui():
-	score_label.text = str(current_score)
-	rank_label.text = current_rank
-	
-	# Color coding for ranks
-	match current_rank:
-		"SKATZ":
-			rank_label.modulate = Color.GOLD
-		"AWESOME":
-			rank_label.modulate = Color.ORANGE_RED
-		"BETTER":
-			rank_label.modulate = Color.BLUE
-		"COOL":
-			rank_label.modulate = Color.GREEN
-		"DOG":
-			rank_label.modulate = Color.GRAY
-
-func _show_action_feedback(action: String, points: int):
-	var display_text = action.replace("_", " ") + " +" + str(points)
-	action_label.text = display_text
-	action_label.modulate.a = 1.0
-	action_fade_timer = 2.0
-
-func _animate_rank_change():
-	if rank_tween:
-		rank_tween.kill()
-	
-	rank_tween = create_tween()
-	rank_tween.set_ease(Tween.EASE_OUT)
-	rank_tween.set_trans(Tween.TRANS_ELASTIC)
-	
-	# Scale animation
-	rank_label.scale = Vector2.ONE
-	rank_tween.tween_property(rank_label, "scale", Vector2.ONE * 1.5, 0.2)
-	rank_tween.tween_property(rank_label, "scale", Vector2.ONE, 0.3)
-
-func _animate_combo_label():
-	if combo_label.has_method("create_tween"):
-		var tween = combo_label.create_tween()
-		tween.set_ease(Tween.EASE_OUT)
-		tween.set_trans(Tween.TRANS_BOUNCE)
+func _update_combo_display():
+	if not combo_label or not combo_multiplier or not combo_container:
+		return
 		
-		combo_label.scale = Vector2.ONE
-		tween.tween_property(combo_label, "scale", Vector2.ONE * 1.3, 0.1)
-		tween.tween_property(combo_label, "scale", Vector2.ONE, 0.2)
+	if combo_count > 1:
+		combo_label.text = str(combo_count) + " COMBO"
+		combo_multiplier.text = "+" + str(combo_count * 10) + " pts"
+		combo_container.modulate = Color.WHITE
+	else:
+		combo_container.modulate = Color.TRANSPARENT
 
-# Signal handlers - these match the renamed signals in player script
+func _update_score_display():
+	if not score_label or not score_multiplier:
+		return
+		
+	# Update score container similar to combo display
+	score_label.text = str(current_score) + " SCORE"
+	var multiplied_score = int(current_score * current_multiplier)
+	score_multiplier.text = "x" + ("%.1f" % current_multiplier) + " = " + str(multiplied_score)
+	
+	# Color based on multiplier level
+	if current_multiplier >= MAX_MULTIPLIER:
+		score_multiplier.modulate = TRICK_COLORS["INSANE"]
+	elif current_multiplier >= 2.5:
+		score_multiplier.modulate = TRICK_COLORS["HARD"]
+	elif current_multiplier >= 1.5:
+		score_multiplier.modulate = TRICK_COLORS["MEDIUM"]
+	else:
+		score_multiplier.modulate = TRICK_COLORS["EASY"]
+
+func _display_trick_score(trick_name: String, points: int, difficulty: String):
+	var trick_info = {
+		"name": trick_name.replace("_", " "),
+		"points": points,
+		"difficulty": difficulty,
+		"timer": 2.0
+	}
+	active_tricks.append(trick_info)
+	_create_trick_display(trick_info)
+
+func _create_trick_display(trick_info: Dictionary):
+	if not trick_display:
+		return
+		
+	var trick_label = Label.new()
+	# Display as "base_points x multiplier" format
+	trick_label.text = trick_info.name + " +" + str(trick_info.points) + " x" + ("%.1f" % current_multiplier)
+	trick_label.modulate = TRICK_COLORS[trick_info.difficulty]
+	
+	# Add slight rotation for style
+	trick_label.rotation_degrees = randf_range(-5.0, 5.0)
+	
+	trick_display.add_child(trick_label)
+	
+	# Animate the trick label
+	var tween = create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(trick_label, "position:x", trick_label.position.x + 50, 0.5)
+	tween.tween_property(trick_label, "modulate:a", 0.0, 1.5)
+	
+	# Remove after animation
+	tween.tween_callback(func(): if trick_label: trick_label.queue_free()).set_delay(2.0)
+
+func _remove_trick_display(index: int):
+	if index < active_tricks.size():
+		active_tricks.remove_at(index)
+
+func _display_combo_bonus(bonus: int):
+	if not combo_container:
+		return
+		
+	var bonus_label = Label.new()
+	bonus_label.text = "COMBO BONUS +" + str(bonus)
+	bonus_label.modulate = Color.GOLD
+	bonus_label.add_theme_font_size_override("font_size", 20)
+	
+	combo_container.add_child(bonus_label)
+	
+	# Animate bonus display
+	var tween = create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(bonus_label, "position:y", bonus_label.position.y - 30, 0.8)
+	tween.tween_property(bonus_label, "modulate:a", 0.0, 1.2)
+	tween.tween_callback(func(): if bonus_label: bonus_label.queue_free()).set_delay(1.5)
+
+# Helper function to convert Color to hex string for BBCode
+func _color_to_hex(color: Color) -> String:
+	var r = int(color.r * 255)
+	var g = int(color.g * 255)
+	var b = int(color.b * 255)
+	return "#" + "%02x%02x%02x" % [r, g, b]
+
+func _update_progress_bar():
+	if not progress_bar or not progress_label:
+		return
+		
+	if progress_level < PROGRESS_THRESHOLDS.size():
+		var current_threshold = PROGRESS_THRESHOLDS[progress_level]
+		var previous_threshold = 0 if progress_level == 0 else PROGRESS_THRESHOLDS[progress_level - 1]
+		
+		var progress_in_level = current_score - previous_threshold
+		var level_range = current_threshold - previous_threshold
+		var progress_percent = (float(progress_in_level) / float(level_range)) * 100.0
+		
+		progress_bar.value = clamp(progress_percent, 0, 100)
+		
+		# Display current grade and progress to next grade
+		var current_grade = GRADE_NAMES[progress_level] if progress_level < GRADE_NAMES.size() else "U"
+		var next_grade = GRADE_NAMES[progress_level + 1] if progress_level + 1 < GRADE_NAMES.size() else "MAX"
+		
+		# Get colors for current and next grade
+		var current_grade_color = GRADE_COLORS.get(current_grade, Color.WHITE)
+		var next_grade_color = GRADE_COLORS.get(next_grade, Color.GRAY) if next_grade != "MAX" else Color.GOLD
+		var arrow_color = Color.GRAY
+		
+		# Convert colors to hex for BBCode
+		var current_hex = _color_to_hex(current_grade_color)
+		var next_hex = _color_to_hex(next_grade_color)
+		var arrow_hex = _color_to_hex(arrow_color)
+		
+		# Create BBCode formatted text
+		if next_grade == "MAX":
+			progress_label.text = "[color=" + current_hex + "]" + current_grade + "[/color] [color=" + arrow_hex + "]→[/color] [color=" + next_hex + "]MAX[/color]"
+		else:
+			progress_label.text = "[color=" + current_hex + "]" + current_grade + "[/color] [color=" + arrow_hex + "]→[/color] [color=" + next_hex + "]" + next_grade + "[/color]"
+		
+		# Don't modulate the entire label anymore since we're using BBCode colors
+		progress_label.modulate = Color.WHITE
+		
+		# Set progress bar color based on current grade
+		progress_bar.modulate = current_grade_color
+		
+		# Check for level up
+		if current_score >= current_threshold:
+			_level_up()
+	else:
+		# Max level reached (U grade)
+		progress_bar.value = 100
+		var u_color_hex = _color_to_hex(GRADE_COLORS["U"])
+		progress_label.text = "[color=" + u_color_hex + "]U RANK[/color]"
+		progress_label.modulate = Color.WHITE  # Don't modulate since we're using BBCode
+		progress_bar.modulate = GRADE_COLORS["U"]
+
+func _level_up():
+	progress_level += 1
+	_animate_level_up()
+	_update_progress_bar()
+
+func _animate_level_up():
+	if not progress_bar:
+		return
+		
+	# Flash effect for level up
+	var tween = create_tween()
+	tween.set_loops(3)
+	tween.tween_property(progress_bar, "modulate", Color.GOLD, 0.1)
+	tween.tween_property(progress_bar, "modulate", Color.WHITE, 0.1)
+
+func _animate_combo():
+	if not combo_container:
+		return
+		
+	if combo_tween:
+		combo_tween.kill()
+	
+	combo_tween = create_tween()
+	combo_tween.set_ease(Tween.EASE_OUT)
+	combo_tween.set_trans(Tween.TRANS_BACK)
+	
+	combo_container.scale = Vector2.ONE
+	combo_tween.tween_property(combo_container, "scale", Vector2.ONE * 1.2, 0.15)
+	combo_tween.tween_property(combo_container, "scale", Vector2.ONE, 0.25)
+
+func _fade_out_combo():
+	if not combo_container:
+		return
+		
+	var tween = create_tween()
+	tween.tween_property(combo_container, "modulate", Color.TRANSPARENT, 0.5)
+
+func _update_display():
+	_update_progress_bar()
+	_update_combo_display()
+	_update_multiplier_display()
+	_update_score_display()
+
+# Signal handlers
 func _on_rail_grind_started():
-	print("STARTING GRIND")
-	grind_timer = 0.01  # Start the timer
-	_add_score("RAIL_GRIND", 25)  # Initial grind bonus
+	_add_score_for_trick("RAIL_GRIND", 15)
 
 func _on_rail_grind_ended():
-	# Bonus points for long grinds
-	print("ENDING GRIND")
-	if grind_timer > 3.0:
-		var bonus = int(grind_timer * 10)  # 10 points per second of grinding
-		_add_score("LONG_GRIND", bonus)
-	grind_timer = 0.0
+	# Check for long grind bonus
+	if combo_count > 3:  # If we've been grinding for a while
+		_add_score_for_trick("LONG_GRIND", 50)
 
 func _on_freeze_block_used():
-	_add_score("FREEZE_BLOCK")
+	_add_score_for_trick("FREEZE_BLOCK", 25)
 
 func _on_dash_performed():
-	_add_score("DASH")
+	_add_score_for_trick("DASH", 10)
 
 func _on_became_airborne():
-	air_timer = 0.01  # Start air time tracking
+	# Start air time tracking
+	pass
 
 func _on_landed():
-	# Bonus for long air time
-	if air_timer > 2.0:
-		var bonus = int(air_timer * 5)  # 5 points per second in air
-		_add_score("AIR_TIME_BONUS", bonus)
-	air_timer = 0.0
+	# Add air time bonus based on hang time
+	_add_score_for_trick("AIR_TIME", 20)
 
-# Public methods for external scoring
-func add_custom_score(action_name: String, points: int):
-	_add_score(action_name, points)
+# Public methods
+func add_custom_trick(trick_name: String, points: int, difficulty: String = "MEDIUM"):
+	trick_difficulty[trick_name] = difficulty
+	_add_score_for_trick(trick_name, points)
 
 func reset_score():
 	current_score = 0
-	current_rank = "FUMBLE"
+	progress_level = 0
 	combo_count = 0
 	combo_timer = 0.0
-	style_variety.clear()
-	_update_ui()
+	current_multiplier = 1.0
+	active_tricks.clear()
+	trick_sequence.clear()
+	_update_display()
 
 func get_current_score() -> int:
 	return current_score
 
-func get_current_rank() -> String:
-	return current_rank
+func get_current_multiplier() -> float:
+	return current_multiplier
