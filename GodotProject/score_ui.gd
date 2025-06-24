@@ -19,6 +19,14 @@ const TRICK_MULTIPLIERS = {
 # Maximum multiplier cap
 const MAX_MULTIPLIER = 3.0
 
+# Idle timeout and decay settings
+const IDLE_TIMEOUT = 2.0  # Seconds of no movement before combo ends
+const DECAY_RATE = 0.3    # How often score decays (seconds) - made faster
+const DECAY_AMOUNT = 50   # Points lost per decay tick - increased from 5 to 50
+
+# F grade threshold - score won't decay below this point
+const F_GRADE_THRESHOLD = 0
+
 # Trick classifications (using var instead of const so we can modify it)
 var trick_difficulty = {
 	"RAIL_GRIND": "EASY",
@@ -39,6 +47,7 @@ const GRADE_NAMES = ["D", "C", "B", "A", "S", "U"]
 
 # Grade colors for visual feedback
 const GRADE_COLORS = {
+	"F": Color.DARK_RED,
 	"D": Color.GRAY,
 	"C": Color.GREEN,
 	"B": Color.BLUE,
@@ -70,6 +79,14 @@ var combo_timer: float = 0.0
 var combo_timeout: float = 3.0
 var current_multiplier: float = 1.0
 
+# Idle and decay tracking
+var idle_timer: float = 0.0
+var is_idle: bool = false
+var decay_timer: float = 0.0
+var is_decaying: bool = false
+var last_player_position: Vector3
+var position_check_threshold: float = 0.1  # Minimum movement to reset idle
+
 # Trick tracking
 var active_tricks: Array[Dictionary] = []
 var trick_sequence: Array[String] = []
@@ -78,6 +95,7 @@ var last_trick_time: float = 0.0
 # Visual effects
 var score_tween: Tween
 var combo_tween: Tween
+var decay_glow_tween: Tween
 var trick_display_timer: float = 0.0
 
 func _ready():
@@ -85,6 +103,10 @@ func _ready():
 	_initialize_progress_bar()
 	_connect_player_signals()
 	_update_display()
+	
+	# Initialize player position tracking
+	if player:
+		last_player_position = player.global_position
 
 func _setup_ui_style():
 	# Apply slanted/skewed transform to main container
@@ -138,10 +160,108 @@ func _connect_player_signals():
 			player.player_landed.connect(_on_landed)
 
 func _process(delta):
+	_update_player_movement_tracking(delta)
 	_update_combo_timer(delta)
+	_update_idle_timer(delta)
+	_update_decay_system(delta)
 	_update_trick_displays(delta)
 	_update_multiplier_display()
 	_update_score_display()
+
+func _update_player_movement_tracking(delta):
+	if not player:
+		return
+	
+	var current_position = player.global_position
+	var movement_distance = last_player_position.distance_to(current_position)
+	
+	# Check if player moved significantly
+	if movement_distance > position_check_threshold:
+		_reset_idle_state()
+		last_player_position = current_position
+
+func _update_idle_timer(delta):
+	if not is_idle:
+		idle_timer += delta
+		if idle_timer >= IDLE_TIMEOUT:
+			_start_idle_state()
+
+func _update_decay_system(delta):
+	if is_decaying:
+		decay_timer += delta
+		if decay_timer >= DECAY_RATE:
+			_decay_score()
+			decay_timer = 0.0
+
+func _start_idle_state():
+	is_idle = true
+	is_decaying = true
+	decay_timer = 0.0
+	
+	# End combo immediately when going idle
+	if combo_count > 0:
+		_end_combo()
+	
+	print("Player went idle - starting aggressive score decay")
+
+func _reset_idle_state():
+	idle_timer = 0.0
+	is_idle = false
+	is_decaying = false
+	decay_timer = 0.0
+
+func _decay_score():
+	# Stop decay if we've reached F grade threshold
+	if current_score <= F_GRADE_THRESHOLD:
+		print("Score at F grade threshold - stopping decay")
+		is_decaying = false
+		return
+	
+	var decay_amount = DECAY_AMOUNT
+	
+	# Make decay even more aggressive based on current score
+	if current_score > 500:
+		decay_amount = int(current_score * 0.1)  # 10% of current score
+	elif current_score > 200:
+		decay_amount = int(current_score * 0.05)  # 5% of current score
+	
+	# Don't let score go below F grade threshold
+	var new_score = current_score - decay_amount
+	if new_score < F_GRADE_THRESHOLD:
+		decay_amount = current_score - F_GRADE_THRESHOLD
+		current_score = F_GRADE_THRESHOLD
+		is_decaying = false  # Stop decaying once we hit F grade
+		print("Reached F grade - decay stopped")
+	else:
+		current_score = new_score
+	
+	# Check if we need to downgrade progress level
+	_check_for_grade_downgrade()
+	
+	_update_progress_bar()
+	_animate_decay_glow()
+	print("Score decayed by ", decay_amount, " - Current score: ", current_score)
+
+func _animate_decay_glow():
+	if not progress_bar:
+		return
+	
+	# Kill existing glow tween if running
+	if decay_glow_tween:
+		decay_glow_tween.kill()
+	
+	decay_glow_tween = create_tween()
+	decay_glow_tween.set_ease(Tween.EASE_OUT)
+	decay_glow_tween.set_trans(Tween.TRANS_QUART)
+	
+	# Create red glow effect - make it more intense for bigger decay
+	var original_modulate = progress_bar.modulate
+	var glow_color = Color.RED
+	glow_color.a = 1.0  # More intense glow
+	
+	# Flash red and return to original color
+	decay_glow_tween.tween_property(progress_bar, "modulate", glow_color, 0.2)
+	decay_glow_tween.tween_property(progress_bar, "modulate", original_modulate, 0.5)
 
 func _update_combo_timer(delta):
 	if combo_timer > 0:
@@ -194,6 +314,9 @@ func _calculate_trick_multiplier() -> float:
 
 func _add_score_for_trick(trick_name: String, base_points: int):
 	var difficulty = trick_difficulty.get(trick_name, "EASY")
+	
+	# Reset idle state when performing tricks
+	_reset_idle_state()
 	
 	# Add base points to score (not affected by multiplier)
 	current_score += base_points
@@ -322,6 +445,15 @@ func _color_to_hex(color: Color) -> String:
 func _update_progress_bar():
 	if not progress_bar or not progress_label:
 		return
+	
+	# Handle F grade case (score at or below threshold)
+	if current_score <= F_GRADE_THRESHOLD:
+		progress_bar.value = 0
+		var f_color_hex = _color_to_hex(GRADE_COLORS["F"])
+		progress_label.text = "[color=" + f_color_hex + "]F GRADE[/color]"
+		progress_label.modulate = Color.WHITE
+		progress_bar.modulate = GRADE_COLORS["F"]
+		return
 		
 	if progress_level < PROGRESS_THRESHOLDS.size():
 		var current_threshold = PROGRESS_THRESHOLDS[progress_level]
@@ -331,7 +463,8 @@ func _update_progress_bar():
 		var level_range = current_threshold - previous_threshold
 		var progress_percent = (float(progress_in_level) / float(level_range)) * 100.0
 		
-		progress_bar.value = clamp(progress_percent, 0, 100)
+		# Allow negative progress to show regression
+		progress_bar.value = clamp(progress_percent, -100, 100)
 		
 		# Display current grade and progress to next grade
 		var current_grade = GRADE_NAMES[progress_level] if progress_level < GRADE_NAMES.size() else "U"
@@ -347,19 +480,29 @@ func _update_progress_bar():
 		var next_hex = _color_to_hex(next_grade_color)
 		var arrow_hex = _color_to_hex(arrow_color)
 		
-		# Create BBCode formatted text
-		if next_grade == "MAX":
-			progress_label.text = "[color=" + current_hex + "]" + current_grade + "[/color] [color=" + arrow_hex + "]→[/color] [color=" + next_hex + "]MAX[/color]"
+		# Show different text based on progress direction
+		if progress_percent < 0:
+			# Show downgrade warning when progress is negative
+			var prev_grade = GRADE_NAMES[progress_level - 1] if progress_level > 0 else "F"
+			var prev_hex = _color_to_hex(GRADE_COLORS.get(prev_grade, Color.RED))
+			progress_label.text = "[color=" + current_hex + "]" + current_grade + "[/color] [color=" + arrow_hex + "]↓[/color] [color=" + prev_hex + "]" + prev_grade + "[/color]"
 		else:
-			progress_label.text = "[color=" + current_hex + "]" + current_grade + "[/color] [color=" + arrow_hex + "]→[/color] [color=" + next_hex + "]" + next_grade + "[/color]"
+			# Normal upgrade display
+			if next_grade == "MAX":
+				progress_label.text = "[color=" + current_hex + "]" + current_grade + "[/color] [color=" + arrow_hex + "]→[/color] [color=" + next_hex + "]MAX[/color]"
+			else:
+				progress_label.text = "[color=" + current_hex + "]" + current_grade + "[/color] [color=" + arrow_hex + "]→[/color] [color=" + next_hex + "]" + next_grade + "[/color]"
 		
 		# Don't modulate the entire label anymore since we're using BBCode colors
 		progress_label.modulate = Color.WHITE
 		
-		# Set progress bar color based on current grade
-		progress_bar.modulate = current_grade_color
+		# Set progress bar color based on current grade and progress direction
+		if progress_percent < 0:
+			progress_bar.modulate = Color.RED  # Red when in danger of downgrade
+		else:
+			progress_bar.modulate = current_grade_color
 		
-		# Check for level up
+		# Check for level up - but only advance one level at a time
 		if current_score >= current_threshold:
 			_level_up()
 	else:
@@ -373,7 +516,33 @@ func _update_progress_bar():
 func _level_up():
 	progress_level += 1
 	_animate_level_up()
-	_update_progress_bar()
+	# Don't call _update_progress_bar() here to avoid recursive level ups
+	print("Leveled up to progress level: ", progress_level)
+
+# Check for grade downgrades when score drops
+func _check_for_grade_downgrade():
+	# Only check if we need to go down one level at a time
+	if progress_level > 0:
+		var previous_threshold = 0 if progress_level == 1 else PROGRESS_THRESHOLDS[progress_level - 2]
+		
+		# If score drops below the previous threshold, downgrade by one level
+		if current_score < previous_threshold:
+			progress_level -= 1
+			_animate_grade_downgrade()
+			print("Grade downgraded to level ", progress_level)
+			
+			# Check again in case we need to downgrade further (but only one level per call)
+			_check_for_grade_downgrade()
+
+func _animate_grade_downgrade():
+	if not progress_bar:
+		return
+		
+	# Flash effect for grade downgrade (red flash)
+	var tween = create_tween()
+	tween.set_loops(2)
+	tween.tween_property(progress_bar, "modulate", Color.RED, 0.15)
+	tween.tween_property(progress_bar, "modulate", Color.WHITE, 0.15)
 
 func _animate_level_up():
 	if not progress_bar:
@@ -449,6 +618,10 @@ func reset_score():
 	current_multiplier = 1.0
 	active_tricks.clear()
 	trick_sequence.clear()
+	
+	# Reset idle and decay state
+	_reset_idle_state()
+	
 	_update_display()
 
 func get_current_score() -> int:
@@ -456,3 +629,15 @@ func get_current_score() -> int:
 
 func get_current_multiplier() -> float:
 	return current_multiplier
+
+# Additional public methods for decay system
+func get_is_decaying() -> bool:
+	return is_decaying
+
+func set_decay_rate(new_rate: float):
+	# Allow external modification of decay rate if needed
+	pass  # Would need to make DECAY_RATE a variable instead of const
+
+func set_decay_amount(new_amount: int):
+	# Allow external modification of decay amount if needed  
+	pass  # Would need to make DECAY_AMOUNT a variable instead of const

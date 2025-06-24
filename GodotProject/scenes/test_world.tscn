@@ -1,12 +1,11 @@
-[gd_scene load_steps=21 format=3 uid="uid://b1k1opcerncst"]
+[gd_scene load_steps=20 format=3 uid="uid://b1k1opcerncst"]
 
 [ext_resource type="PackedScene" uid="uid://bkb0bgwpuuc4n" path="res://scenes/camera_controller.tscn" id="1_1lwx6"]
-[ext_resource type="Shader" uid="uid://p071tuygxbtu" path="res://scenes/test_world.gdshader" id="1_dvny0"]
-[ext_resource type="Script" uid="uid://eseww4i03svg" path="res://scenes/test_world.gd" id="2_7448y"]
+[ext_resource type="Shader" path="res://scenes/test_world.gdshader" id="1_dvny0"]
+[ext_resource type="Script" path="res://scenes/test_world.gd" id="2_7448y"]
 [ext_resource type="PackedScene" uid="uid://bmr1d5gach4ip" path="res://scenes/player.tscn" id="2_dsnr4"]
 [ext_resource type="PackedScene" uid="uid://bjeyih3voierq" path="res://scenes/rails.tscn" id="3_lf0gk"]
 [ext_resource type="Texture2D" uid="uid://b8thbqivcxa65" path="res://Metro_PSX/Metro_PSX/Textures/Floor.png" id="4_ynswa"]
-[ext_resource type="Script" uid="uid://car72n7h721ub" path="res://scenes/node.gd" id="6_xwrkq"]
 [ext_resource type="PackedScene" uid="uid://vhe1h3wglknj" path="res://scenes/freezeblocks.tscn" id="7_xwrkq"]
 [ext_resource type="PackedScene" uid="uid://cfaqvg4g1tf74" path="res://scenes/score_ui.tscn" id="8_nrstc"]
 
@@ -112,53 +111,6 @@ mesh = SubResource("BoxMesh_dvny0")
 
 [node name="CSGBakedCollisionShape3D" type="CollisionShape3D" parent="SubViewport/TestWorld/StaticBody3D3"]
 shape = SubResource("ConcavePolygonShape3D_7448y")
-
-[node name="Node" type="Node" parent="SubViewport/TestWorld"]
-script = ExtResource("6_xwrkq")
-
-[node name="CanvasLayer" type="CanvasLayer" parent="SubViewport/TestWorld/Node"]
-
-[node name="VBoxContainer" type="VBoxContainer" parent="SubViewport/TestWorld/Node/CanvasLayer"]
-offset_right = 40.0
-offset_bottom = 40.0
-
-[node name="ResumeButton" type="Button" parent="SubViewport/TestWorld/Node/CanvasLayer/VBoxContainer"]
-layout_mode = 2
-text = "RESUME"
-
-[node name="MenuButton" type="Button" parent="SubViewport/TestWorld/Node/CanvasLayer/VBoxContainer"]
-layout_mode = 2
-text = "MENU"
-
-[node name="QuitButton" type="Button" parent="SubViewport/TestWorld/Node/CanvasLayer/VBoxContainer"]
-layout_mode = 2
-text = "QUIT"
-
-[node name="MenuCamera3D" type="Camera3D" parent="SubViewport/TestWorld"]
-
-[node name="CanvasLayer" type="CanvasLayer" parent="SubViewport/TestWorld"]
-
-[node name="MainMenuController" type="VBoxContainer" parent="SubViewport/TestWorld/CanvasLayer"]
-offset_right = 40.0
-offset_bottom = 40.0
-
-[node name="VBoxContainer" type="VBoxContainer" parent="SubViewport/TestWorld/CanvasLayer/MainMenuController"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="SubViewport/TestWorld/CanvasLayer/MainMenuController/VBoxContainer"]
-layout_mode = 2
-
-[node name="PlayButton" type="Button" parent="SubViewport/TestWorld/CanvasLayer/MainMenuController/VBoxContainer"]
-layout_mode = 2
-text = "PLAY"
-
-[node name="SettingButton2" type="Button" parent="SubViewport/TestWorld/CanvasLayer/MainMenuController/VBoxContainer"]
-layout_mode = 2
-text = "SETTING"
-
-[node name="QuitButton3" type="Button" parent="SubViewport/TestWorld/CanvasLayer/MainMenuController/VBoxContainer"]
-layout_mode = 2
-text = "QUIT"
 
 [node name="Freezeblocks" parent="." instance=ExtResource("7_xwrkq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.2767, -0.960316, 0.39393)
