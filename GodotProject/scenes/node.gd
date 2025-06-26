@@ -31,7 +31,7 @@ func _ready():
 func _input(event):
 	# Handle pause input (ESC key) - only for key/button events
 	if event is InputEventKey or event is InputEventJoypadButton:
-		if event.is_action_just_pressed("ui_cancel"):
+ 		if event.is_action_just_pressed("ui_cancel"):
 			_toggle_pause()
 
 func _toggle_pause():

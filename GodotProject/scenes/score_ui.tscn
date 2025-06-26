@@ -10,6 +10,9 @@ offset_top = 20.0
 offset_right = 320.0
 offset_bottom = 420.0
 script = ExtResource("1_hoy1o")
+trick_box_position = Vector2(20, 160)
+combo_container_position = Vector2(20, 370)
+multiplier_container_position = Vector2(35, 55)
 
 [node name="MainContainer" type="Control" parent="."]
 anchors_preset = 0
@@ -26,7 +29,7 @@ offset_bottom = 99.0
 theme_override_font_sizes/bold_italics_font_size = 5
 horizontal_alignment = 1
 
-[node name="ScoreProgress" type="ProgressBar" parent="MainContainer/ProgressContainer"]
+[node name="ProgressBar" type="ProgressBar" parent="MainContainer/ProgressContainer"]
 layout_mode = 2
 offset_top = 103.0
 offset_right = 285.0
@@ -42,29 +45,25 @@ offset_bottom = 11.0
 
 [node name="MultiplierLabel" type="Label" parent="MainContainer/MultiplierContainer"]
 layout_mode = 2
-offset_top = 134.0
-offset_right = 285.0
-offset_bottom = 184.0
+offset_left = -17.0
+offset_top = 281.0
+offset_right = 268.0
+offset_bottom = 331.0
 theme_override_font_sizes/font_size = 36
 horizontal_alignment = 1
 
 [node name="TrickContainer" type="VBoxContainer" parent="MainContainer"]
 layout_mode = 0
-offset_top = 189.0
-offset_right = 40.0
-offset_bottom = 258.0
+offset_left = 3.0
+offset_top = 121.0
+offset_right = 236.0
+offset_bottom = 176.0
 
 [node name="ComboContainer" type="VBoxContainer" parent="MainContainer"]
 layout_mode = 0
-offset_top = 119.0
+offset_top = 308.0
 offset_right = 40.0
-offset_bottom = 213.0
-
-[node name="ComboMultiplier" type="Label" parent="MainContainer/ComboContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 0, 1)
-theme_override_font_sizes/font_size = 24
-horizontal_alignment = 1
+offset_bottom = 402.0
 
 [node name="ComboLabel" type="Label" parent="MainContainer/ComboContainer"]
 layout_mode = 2
