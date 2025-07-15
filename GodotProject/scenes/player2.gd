@@ -7,6 +7,7 @@ signal freeze_block_used
 signal dash_performed
 signal player_became_airborne
 signal player_landed
+signal qte_trick_completed(success: bool)  # New QTE signal
 
 # Movement parameters
 @export var move_speed: float = 15.0  # Standard speed for Sonic-like movement
@@ -28,6 +29,10 @@ signal player_landed
 @export var dash_cooldown: float = 1.0  # Cooldown between dashes
 @export var dash_gravity_reduction: float = 0.3  # Reduce gravity during dash (0-1)
 
+# QTE parameters
+@export var qte_time_scale: float = 0.2  # How much to slow down time during QTE
+@export var qte_cooldown: float = 3.0  # Cooldown between QTE attempts
+
 # Ground check
 @export var ground_check_distance: float = 0.1
 @onready var ground_check: RayCast3D = $GroundCheck
@@ -47,6 +52,12 @@ var dash_direction: float = 0.0
 var is_frozen: bool = false
 var has_double_jumped: bool = false
 
+# QTE variables
+var qte_system: Control = null
+var is_qte_active: bool = false
+var qte_cooldown_timer: float = 0.0
+var original_time_scale: float = 1.0
+
 # Signal tracking variables
 var was_grounded_last_frame: bool = false
 var was_on_rail_last_frame: bool = false
@@ -63,11 +74,31 @@ func _ready():
 	axis_lock_angular_x = true
 	axis_lock_angular_y = true
 	axis_lock_angular_z = true
+	
+	# Setup QTE system
+	_setup_qte_system()
+
+func _setup_qte_system():
+	# Load and instantiate the QTE scene
+	var qte_scene = preload("res://scenes/qte_system.tscn")  # Adjust path as needed
+	qte_system = qte_scene.instantiate()
+	
+	# Add to the scene tree at a high level so it's always visible
+	get_tree().current_scene.add_child(qte_system)
+	
+	# Connect QTE signals
+	qte_system.qte_completed.connect(_on_qte_completed)
+	qte_system.qte_started.connect(_on_qte_started)
+	qte_system.qte_ended.connect(_on_qte_ended)
 
 func _physics_process(delta):
 	# Skip all physics if frozen
 	if is_frozen:
 		return
+	
+	# Update QTE cooldown timer
+	if qte_cooldown_timer > 0:
+		qte_cooldown_timer -= delta
 		
 	# Update dash timers
 	if dash_cooldown_timer > 0:
@@ -94,7 +125,7 @@ func _physics_process(delta):
 	
 	if not was_on_rail_last_frame and is_on_rail:
 		rail_grind_started.emit()
-		print("emitting  rail grind started")
+		print("emitting rail grind started")
 		
 	elif was_on_rail_last_frame and not is_on_rail:
 		rail_grind_ended.emit()
@@ -137,6 +168,10 @@ func _physics_process(delta):
 		var new_y_velocity = max(current_velocity.y - ground_gravity * gravity_multiplier * delta, -max_fall_speed)
 		apply_central_force(Vector3(0, (new_y_velocity - current_velocity.y) * mass / delta, 0))
 
+	# Handle QTE input (SPACE BAR during rail grind)
+	if Input.is_action_just_pressed("ui_accept") and is_on_rail and not is_qte_active and qte_cooldown_timer <= 0:
+		_start_qte()
+
 	# Handle dash input
 	if Input.is_action_just_pressed("dash") and dash_cooldown_timer <= 0 and not is_dashing and not is_on_rail:
 		_start_dash()
@@ -147,15 +182,13 @@ func _physics_process(delta):
 			# Only allow jump at ledge
 			if is_at_rail_ledge():
 				# Rail jump: dash forward with stronger force
-				#print("Rail jump - powerful dash forward at ledge")
-				apply_central_impulse(Vector3.UP * jump_force )
+				apply_central_impulse(Vector3.UP * jump_force)
 				ground_check.enabled = false
 				$Timer.start()
 			else:
 				print("Jump blocked - not at rail ledge")
 		else:
 			# Normal jump
-			#print("Normal jump")
 			apply_central_impulse(Vector3(0, jump_force * mass, 0))
 
 	# Handle movement
@@ -163,6 +196,41 @@ func _physics_process(delta):
 
 	# Handle mesh tilt
 	_handle_mesh_tilt(delta)
+
+func _start_qte():
+	if is_qte_active or not qte_system:
+		return
+	
+	print("Starting QTE!")
+	is_qte_active = true
+	qte_cooldown_timer = qte_cooldown
+	
+	# Slow down time
+	original_time_scale = Engine.time_scale
+	Engine.time_scale = qte_time_scale
+	
+	# Start the QTE system
+	qte_system.start_qte()
+
+func _on_qte_started():
+	print("QTE UI started")
+
+func _on_qte_completed(success: bool):
+	print("QTE completed with success: ", success)
+	
+	# Emit our scoring signal
+	qte_trick_completed.emit(success)
+	
+	# Restore time scale
+	Engine.time_scale = original_time_scale
+	is_qte_active = false
+
+func _on_qte_ended():
+	print("QTE ended")
+	
+	# Ensure time scale is restored
+	Engine.time_scale = original_time_scale
+	is_qte_active = false
 
 func _start_dash():
 	# Determine dash direction
@@ -182,8 +250,6 @@ func _start_dash():
 	
 	# Emit dash signal for scoring
 	dash_performed.emit()
-	
-	#print("Dash started! Direction: ", dash_direction)
 
 func _check_grounded() -> Dictionary:
 	var result = {"is_grounded": false, "is_on_rail": false, "ground_normal": Vector3.UP}
@@ -198,7 +264,6 @@ func _check_grounded() -> Dictionary:
 func _handle_movement(delta):
 	# Get input (don't override movement during dash)
 	if is_grounded and not is_on_rail and not is_dashing:
-		#print("checking input")
 		move_input = Input.get_axis("move_left", "move_right")
 	elif is_dashing:
 		# During dash, reduce player control

@@ -117,8 +117,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.2767, -0.960316, 0.39393)
 
 [node name="ScoreUI" parent="." node_paths=PackedStringArray("player") instance=ExtResource("8_nrstc")]
 layout_mode = 2
-combo_container_position = Vector2(320, 20)
-multiplier_container_position = Vector2(320, 60)
 player = NodePath("../SubViewport/TestWorld/Player")
 
 [node name="StaticBody3D3" type="StaticBody3D" parent="." groups=["Rail", "rails"]]
