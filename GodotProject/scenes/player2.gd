@@ -7,31 +7,30 @@ signal freeze_block_used
 signal dash_performed
 signal player_became_airborne
 signal player_landed
-signal qte_trick_completed(success: bool)  # New QTE signal
+signal qte_trick_completed(success: bool)
 
 # Movement parameters
-@export var move_speed: float = 15.0  # Standard speed for Sonic-like movement
-@export var rail_move_speed: float = 25.0  # Higher speed when on rails
-@export var jump_force: float = 10.0  # Higher for Mario-like jump height
-@export var freeze_jump_force: float = 6.0  # Weaker jump from freeze block
+@export var move_speed: float = 15.0
+@export var rail_move_speed: float = 25.0
+@export var jump_force: float = 10.0
+@export var freeze_jump_force: float = 6.0
 @export var ground_gravity: float = 9.8
-@export var jump_gravity: float = 6.0  # Lower gravity for floaty Mario-like jumps
-@export var max_fall_speed: float = 15.0  # Cap falling speed
-@export var acceleration: float = 20.0  # Snappier acceleration
-@export var friction: float = 2.0  # Ground friction for stopping
-@export var air_friction: float = 2.0  # Lower friction in air for momentum
-@export var rail_force: float = 100.0  # Downward force when on rails
-@export var mesh_tilt_speed: float = 10.0  # Speed of mesh tilt interpolation
+@export var jump_gravity: float = 6.0
+@export var max_fall_speed: float = 15.0
+@export var acceleration: float = 20.0
+@export var friction: float = 2.0
+@export var air_friction: float = 2.0
+@export var rail_force: float = 100.0
+@export var mesh_tilt_speed: float = 10.0
 
 # Dash parameters
-@export var dash_force: float = 30.0  # Force applied during dash
-@export var dash_duration: float = 0.2  # How long the dash lasts
-@export var dash_cooldown: float = 1.0  # Cooldown between dashes
-@export var dash_gravity_reduction: float = 0.3  # Reduce gravity during dash (0-1)
+@export var dash_force: float = 30.0
+@export var dash_duration: float = 0.2
+@export var dash_cooldown: float = 1.0
+@export var dash_gravity_reduction: float = 0.3
 
 # QTE parameters
-@export var qte_time_scale: float = 0.2  # How much to slow down time during QTE
-@export var qte_cooldown: float = 3.0  # Cooldown between QTE attempts
+@export var qte_cooldown: float = 2.0
 
 # Ground check
 @export var ground_check_distance: float = 0.1
@@ -56,7 +55,6 @@ var has_double_jumped: bool = false
 var qte_system: Control = null
 var is_qte_active: bool = false
 var qte_cooldown_timer: float = 0.0
-var original_time_scale: float = 1.0
 
 # Signal tracking variables
 var was_grounded_last_frame: bool = false
@@ -79,17 +77,16 @@ func _ready():
 	_setup_qte_system()
 
 func _setup_qte_system():
-	# Load and instantiate the QTE scene
-	var qte_scene = preload("res://scenes/qte_system.tscn")  # Adjust path as needed
-	qte_system = qte_scene.instantiate()
+	# Load the script and create an instance using new()
+	var qte_script = preload
+
+	qte_system = qte_script.new()
 	
 	# Add to the scene tree at a high level so it's always visible
 	get_tree().current_scene.add_child(qte_system)
 	
 	# Connect QTE signals
-	qte_system.qte_completed.connect(_on_qte_completed)
-	qte_system.qte_started.connect(_on_qte_started)
-	qte_system.qte_ended.connect(_on_qte_ended)
+	qte_system.connect("qte_completed", _on_qte_completed)
 
 func _physics_process(delta):
 	# Skip all physics if frozen
@@ -130,6 +127,10 @@ func _physics_process(delta):
 	elif was_on_rail_last_frame and not is_on_rail:
 		rail_grind_ended.emit()
 		print("emitting rail grind ended")
+		# Hide QTE when leaving rail
+		if is_qte_active:
+			qte_system.hide()  # Use built-in hide() method
+			is_qte_active = false
 	
 	# Store states for next frame
 	was_grounded_last_frame = is_grounded
@@ -156,7 +157,7 @@ func _physics_process(delta):
 		
 		# Apply air control only if player is giving input
 		if abs(air_input) > 0.1:
-			var air_control_force = air_input * acceleration * 0.3 * mass  # Reduced air control
+			var air_control_force = air_input * acceleration * 0.3 * mass
 			apply_central_force(Vector3(air_control_force, 0, 0))
 		
 	elif is_on_rail:
@@ -168,8 +169,8 @@ func _physics_process(delta):
 		var new_y_velocity = max(current_velocity.y - ground_gravity * gravity_multiplier * delta, -max_fall_speed)
 		apply_central_force(Vector3(0, (new_y_velocity - current_velocity.y) * mass / delta, 0))
 
-	# Handle QTE input (SPACE BAR during rail grind)
-	if Input.is_action_just_pressed("ui_accept") and is_on_rail and not is_qte_active and qte_cooldown_timer <= 0:
+	# Handle QTE input (Q key during rail grind)
+	if Input.is_action_just_pressed("qte_trigger") and is_on_rail and not is_qte_active and qte_cooldown_timer <= 0:
 		_start_qte()
 
 	# Handle dash input
@@ -205,15 +206,8 @@ func _start_qte():
 	is_qte_active = true
 	qte_cooldown_timer = qte_cooldown
 	
-	# Slow down time
-	original_time_scale = Engine.time_scale
-	Engine.time_scale = qte_time_scale
-	
 	# Start the QTE system
 	qte_system.start_qte()
-
-func _on_qte_started():
-	print("QTE UI started")
 
 func _on_qte_completed(success: bool):
 	print("QTE completed with success: ", success)
@@ -221,15 +215,6 @@ func _on_qte_completed(success: bool):
 	# Emit our scoring signal
 	qte_trick_completed.emit(success)
 	
-	# Restore time scale
-	Engine.time_scale = original_time_scale
-	is_qte_active = false
-
-func _on_qte_ended():
-	print("QTE ended")
-	
-	# Ensure time scale is restored
-	Engine.time_scale = original_time_scale
 	is_qte_active = false
 
 func _start_dash():
@@ -368,7 +353,7 @@ func trigger_freeze_jump():
 		var freeze_timer = Timer.new()
 		freeze_timer.wait_time = 0.5
 		freeze_timer.one_shot = true
-		freeze_timer.process_mode = Node.PROCESS_MODE_ALWAYS  # Continue during pause
+		freeze_timer.process_mode = Node.PROCESS_MODE_ALWAYS
 		add_child(freeze_timer)
 		freeze_timer.timeout.connect(_on_freeze_timeout)
 		freeze_timer.start()

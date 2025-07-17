@@ -1,38 +1,39 @@
-[gd_scene load_steps=2 format=3 uid="uid://bldi47t25fvl3"]
+[gd_scene load_steps=2 format=3 uid="uid://buopnj0yulwjo"]
 
-[ext_resource type="Script" uid="uid://d05vfvisjp6di" path="res://qte_system.gd" id="1_npcot"]
+[ext_resource type="Script" uid="uid://ltb6p3870aeg" path="res://scenes/qte_system.gd" id="1_npcot"]
 
 [node name="QTESystem" type="Control"]
 layout_mode = 3
 anchors_preset = 0
-offset_right = 1154.0
-offset_bottom = 646.0
+offset_right = 1152.0
+offset_bottom = 647.0
 script = ExtResource("1_npcot")
+sequence_length = null
+time_per_input = null
+scroll_speed = null
+letter_spacing = null
 
-[node name="Background" type="Panel" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="QTEContainer" type="Control" parent="."]
+anchors_preset = 0
+offset_right = 1152.0
+offset_bottom = 648.0
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="LetterContainer" type="Control" parent="QTEContainer"]
+anchors_preset = 0
+offset_right = 1137.0
+offset_bottom = 627.0
+
+[node name="CenterIndicator" type="Panel" parent="QTEContainer"]
 layout_mode = 0
 offset_right = 1153.0
+offset_bottom = 646.0
+
+[node name="ProgressBar" type="ProgressBar" parent="QTEContainer"]
+layout_mode = 0
+offset_right = 1146.0
 offset_bottom = 644.0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
-layout_mode = 2
-
-[node name="InstructionLabel" type="Label" parent="CenterContainer/VBoxContainer"]
-layout_mode = 2
-text = "Press the letters in order!"
-
-[node name="LetterContainer" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
-layout_mode = 2
-
-[node name="ProgressBar" type="ProgressBar" parent="CenterContainer/VBoxContainer"]
-layout_mode = 2
-max_value = 5.0
-value = 5.0
+[node name="FeedbackLabel" type="Label" parent="QTEContainer"]
+layout_mode = 0
+offset_right = 1153.0
+offset_bottom = 647.0
