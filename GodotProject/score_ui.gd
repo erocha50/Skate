@@ -50,6 +50,7 @@ var orig_multiplier_pos: Vector2
 var shake_tween: Tween
 var trick_display: VBoxContainer
 var trick_box: ColorRect
+var multiplier_decay_timer: float = 0.0
 var trick_diff = {
 	"RAIL_GRIND": "EASY", "FREEZE_BLOCK": "MEDIUM", "DASH": "EASY", "AIR_TIME": "EASY",
 	"LONG_GRIND": "HARD", "AIR_TIME_BONUS": "MEDIUM", "COMBO_TRICK": "HARD", "STYLE_COMBO": "INSANE"
@@ -110,6 +111,20 @@ func _process(delta):
 		tricks[trick].timer -= delta
 		if tricks[trick].timer <= 0: _remove_trick(trick)
 	
+	# Handle multiplier decay when no tricks are performed
+	var current_time = Time.get_ticks_msec() / 1000.0
+	if combo_count > 0 and current_time - last_trick >= 1.0:
+		multiplier_decay_timer += delta
+		if multiplier_decay_timer >= 1.0:
+			multiplier_val = max(0.0, multiplier_val - 0.5)
+			multiplier_decay_timer = 0.0
+			if multiplier_val <= 0.0:
+				combo_count = 0
+				multiplier_val = 1.0
+				_update_combo()
+	else:
+		multiplier_decay_timer = 0.0
+	
 	# Continuous score decay with level-scaled rate
 	if score > 0:
 		var old_score = score
@@ -142,6 +157,8 @@ func _add_score(trick: String, points: int):
 	var old_level = level
 	score += float(points)  # Ensure points are added as float
 	combo_count += 1
+	multiplier_val = 1.0 + (combo_count * 0.1)  # Reset multiplier to base level for current combo
+	multiplier_decay_timer = 0.0  # Reset decay timer
 	_update_combo()
 	_animate(combo, 1.2, 0.15)
 	_display_trick(trick, points)
@@ -232,7 +249,12 @@ func _update_multiplier():
 	for trick in trick_seq:
 		if time - last_trick < 3.0:
 			trick_mult += (TRICK_MULTIPLIERS[trick_diff.get(trick, "EASY")] - 1.0) * 0.1
-	multiplier_val = min(base * trick_mult, MAX_MULTIPLIER)
+	
+	# Apply trick multiplier to current multiplier value, but don't go below base
+	var full_multiplier = min(base * trick_mult, MAX_MULTIPLIER)
+	if multiplier_val > full_multiplier:
+		multiplier_val = full_multiplier
+	
 	if multiplier_val > 1.0:
 		multiplier_label.text = "MULTIPLIER X%.1f" % multiplier_val
 		multiplier.modulate = Color.WHITE
@@ -272,11 +294,20 @@ func _update_combo():
 		combo.modulate = Color.TRANSPARENT
 
 func _update_progress():
-	var curr = 0
-	var next = PROGRESS_THRESHOLDS[0] if level == 0 else PROGRESS_THRESHOLDS[level - 1] if level < PROGRESS_THRESHOLDS.size() else PROGRESS_THRESHOLDS[-1]
-	var next_max = PROGRESS_THRESHOLDS[level] if level < PROGRESS_THRESHOLDS.size() else next
-	var progress = (float(score - curr) / (next_max - curr)) * 100.0 if level < PROGRESS_THRESHOLDS.size() else 100.0
-	progress_bar.value = clamp(progress, 0, 100)
+	# Get the current level thresholds
+	var current_min = 0 if level == 0 else PROGRESS_THRESHOLDS[level - 1]
+	var current_max = PROGRESS_THRESHOLDS[level] if level < PROGRESS_THRESHOLDS.size() else PROGRESS_THRESHOLDS[-1]
+	
+	# Calculate progress within the current level range
+	var progress_value = 0.0
+	if level < PROGRESS_THRESHOLDS.size():
+		progress_value = (float(score - current_min) / (current_max - current_min)) * 100.0
+	else:
+		progress_value = 100.0  # Max level reached
+	
+	progress_bar.value = clamp(progress_value, 0, 100)
+	
+	# Update grade display
 	var grade = GRADE_NAMES[level]
 	var hex = _color_to_hex(GRADE_COLORS[grade])
 	if level < GRADE_NAMES.size() - 1:
@@ -314,6 +345,7 @@ func reset_score():
 	level = 0
 	combo_count = 0
 	multiplier_val = 1.0
+	multiplier_decay_timer = 0.0
 	tricks.clear()
 	trick_order.clear()
 	trick_seq.clear()

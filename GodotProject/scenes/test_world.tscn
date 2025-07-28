@@ -87,24 +87,6 @@ camera_distance_z = 10.0
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -9.31006, 0, 0)
 mass = 2.0
 physics_material_override = SubResource("PhysicsMaterial_1lwx6")
-move_speed = null
-rail_move_speed = null
-jump_force = null
-freeze_jump_force = null
-ground_gravity = null
-jump_gravity = null
-max_fall_speed = null
-acceleration = null
-friction = null
-air_friction = null
-rail_force = null
-mesh_tilt_speed = null
-dash_force = null
-dash_duration = null
-dash_cooldown = null
-dash_gravity_reduction = null
-qte_cooldown = null
-ground_check_distance = null
 
 [node name="StaticBody3D" parent="SubViewport/TestWorld" instance=ExtResource("3_lf0gk")]
 transform = Transform3D(0.999815, -0.0192672, 0, 0.0192672, 0.999815, 0, 0, 0, 1, 16.0222, -3.26965, 0.0943441)

@@ -10,7 +10,7 @@ offset_top = 20.0
 offset_right = 320.0
 offset_bottom = 420.0
 script = ExtResource("1_hoy1o")
-base_decay_rate = 30.0
+base_decay_rate = 20.0
 
 [node name="MainContainer" type="Control" parent="."]
 anchors_preset = 0
