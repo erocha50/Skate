@@ -1,30 +1,27 @@
 extends Control
 
 # QTE System for Rail Grinding Tricks
-# Shows a scrolling WASD sequence that the player must input correctly
+# Shows a single letter that player must press before time runs out
 
-signal qte_completed(success)
+signal qte_completed(success: bool, score_bonus: int)
 
 # QTE Configuration
-export var sequence_length: int = 4
-export var time_per_input: float = 0.8
-export var scroll_speed: float = 200.0
-export var letter_spacing: float = 100.0
+@export var qte_time: float = 2.0  # Total time to complete QTE
+@export var slowdown_factor: float = 0.3  # How much to slow game (0.3 = 30% speed)
+@export var max_score_bonus: int = 100  # Maximum bonus points
 
 # UI Elements
-onready var qte_container: Control = $QTEContainer
-onready var letter_container: Control = $QTEContainer/LetterContainer
-onready var center_indicator: Control = $QTEContainer/CenterIndicator
-onready var progress_bar: ProgressBar = $QTEContainer/ProgressBar
-onready var feedback_label: Label = $QTEContainer/FeedbackLabel
+@onready var qte_container: Control = $QTEContainer
+@onready var letter_label: Label = $QTEContainer/LetterLabel
+@onready var progress_bar: ProgressBar = $QTEContainer/ProgressBar
+@onready var feedback_label: Label = $QTEContainer/FeedbackLabel
+@onready var background: ColorRect = $QTEContainer/Background
 
 # QTE State
 var is_active: bool = false
-var current_sequence: Array = []
-var current_index: int = 0
-var letter_nodes: Array = []
+var current_letter: String = ""
 var input_timer: float = 0.0
-var total_time: float = 0.0
+var original_time_scale: float = 1.0
 
 # Input mapping
 var input_map: Dictionary = {
@@ -35,10 +32,9 @@ var input_map: Dictionary = {
 }
 
 # Colors for visual feedback
-var default_color: Color = Color.white
-var active_color: Color = Color.yellow
-var success_color: Color = Color.green
-var fail_color: Color = Color.red
+var success_color: Color = Color.GREEN
+var fail_color: Color = Color.RED
+var warning_color: Color = Color.ORANGE
 
 func _ready():
 	# Hide the QTE initially
@@ -48,133 +44,81 @@ func _ready():
 	_setup_ui()
 
 func _setup_ui():
-	# Create main container if it doesn't exist
-	if not qte_container:
-		qte_container = Control.new()
-		qte_container.name = "QTEContainer"
-		qte_container.anchor_left = 0.5
-		qte_container.anchor_right = 0.5
-		qte_container.anchor_top = 0.5
-		qte_container.anchor_bottom = 0.5
-		qte_container.margin_left = -200
-		qte_container.margin_right = 200
-		qte_container.margin_top = -100
-		qte_container.margin_bottom = 100
-		add_child(qte_container)
+	# Center the container on screen
+	if qte_container:
+		qte_container.anchors_preset = Control.PRESET_CENTER
+		qte_container.size = Vector2(300, 200)
+		qte_container.position = qte_container.position - qte_container.size / 2
 	
-	# Create letter container for scrolling letters
-	if not letter_container:
-		letter_container = Control.new()
-		letter_container.name = "LetterContainer"
-		letter_container.rect_position = Vector2(0, -50)
-		letter_container.rect_size = Vector2(400, 100)
-		qte_container.add_child(letter_container)
+	# Setup letter label (large, centered)
+	if letter_label:
+		letter_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		letter_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		letter_label.add_theme_font_size_override("font_size", 72)
 	
-	# Create center indicator (shows current letter position)
-	if not center_indicator:
-		center_indicator = Panel.new()
-		center_indicator.name = "CenterIndicator"
-		center_indicator.rect_position = Vector2(175, -60)
-		center_indicator.rect_size = Vector2(50, 120)
-		center_indicator.modulate = Color(1, 1, 1, 0.3)
-		qte_container.add_child(center_indicator)
-	
-	# Create progress bar
-	if not progress_bar:
-		progress_bar = ProgressBar.new()
-		progress_bar.name = "ProgressBar"
-		progress_bar.rect_position = Vector2(-100, 80)
-		progress_bar.rect_size = Vector2(200, 20)
+	# Setup progress bar
+	if progress_bar:
+		progress_bar.show_percentage = false
 		progress_bar.max_value = 100
-		qte_container.add_child(progress_bar)
 	
-	# Create feedback label
-	if not feedback_label:
-		feedback_label = Label.new()
-		feedback_label.name = "FeedbackLabel"
-		feedback_label.rect_position = Vector2(-50, 110)
-		feedback_label.rect_size = Vector2(100, 30)
-		feedback_label.align = Label.ALIGN_CENTER
-		feedback_label.add_font_override("font", load("res://fonts/default_font.tres"))
-		qte_container.add_child(feedback_label)
+	# Setup feedback label
+	if feedback_label:
+		feedback_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		feedback_label.add_theme_font_size_override("font_size", 24)
+	
+	# Setup background
+	if background:
+		background.color = Color(0, 0, 0, 0.7)  # Semi-transparent dark background
 
 func start_qte():
 	if is_active:
 		return
 	
-	print("QTE System: Starting new QTE sequence")
+	print("QTE System: Starting QTE")
 	
-	# Generate random sequence
-	_generate_sequence()
+	# Store original time scale and slow down game
+	original_time_scale = Engine.time_scale
+	Engine.time_scale = slowdown_factor
+	
+	# Generate random letter
+	current_letter = _generate_random_letter()
 	
 	# Setup QTE state
 	is_active = true
-	current_index = 0
-	total_time = sequence_length * time_per_input
-	input_timer = time_per_input
+	input_timer = qte_time
 	
 	# Show and setup UI
 	show_qte()
-	_create_letter_display()
+	_setup_letter_display()
 	_update_progress()
 	
 	# Clear feedback
-	feedback_label.text = ""
+	feedback_label.text = "PRESS " + current_letter.to_upper() + "!"
 
-func _generate_sequence():
-	current_sequence.clear()
+func _generate_random_letter() -> String:
 	var letters = ["w", "a", "s", "d"]
-	
-	for i in range(sequence_length):
-		current_sequence.append(letters[randi() % letters.size()])
-	
-	print("QTE System: Generated sequence: ", current_sequence)
+	var random_letter = letters[randi() % letters.size()]
+	print("QTE System: Generated letter: ", random_letter)
+	return random_letter
 
-func _create_letter_display():
-	# Clear existing letter nodes
-	for node in letter_nodes:
-		if node:
-			node.queue_free()
-	letter_nodes.clear()
-	
-	# Create letter nodes for the sequence
-	for i in range(current_sequence.size()):
-		var letter_node = _create_letter_node(current_sequence[i], i)
-		letter_container.add_child(letter_node)
-		letter_nodes.append(letter_node)
-
-func _create_letter_node(letter: String, index: int) -> Control:
-	var letter_panel = Panel.new()
-	letter_panel.rect_size = Vector2(80, 80)
-	letter_panel.rect_position = Vector2(index * letter_spacing, 0)
-	
-	var letter_label = Label.new()
-	letter_label.text = letter.to_upper()
-	letter_label.align = Label.ALIGN_CENTER
-	letter_label.valign = Label.VALIGN_CENTER
-	letter_label.anchor_left = 0
-	letter_label.anchor_right = 1
-	letter_label.anchor_top = 0
-	letter_label.anchor_bottom = 1
-	letter_label.modulate = default_color
-	
-	letter_panel.add_child(letter_label)
-	
-	return letter_panel
+func _setup_letter_display():
+	# Display the current letter
+	if letter_label:
+		letter_label.text = current_letter.to_upper()
+		letter_label.modulate = Color.WHITE
 
 func _process(delta):
 	if not is_active:
 		return
 	
-	# Update timers
-	input_timer -= delta
-	total_time -= delta
+	# Update timer (account for slowdown)
+	input_timer -= delta / slowdown_factor
 	
 	# Update progress bar
 	_update_progress()
 	
-	# Scroll letters towards center
-	_scroll_letters(delta)
+	# Update letter color based on time remaining
+	_update_letter_color()
 	
 	# Check for timeout
 	if input_timer <= 0:
@@ -184,42 +128,20 @@ func _process(delta):
 	# Handle input
 	_handle_input()
 
-func _scroll_letters(delta):
-	var scroll_offset = scroll_speed * delta
-	
-	for i in range(letter_nodes.size()):
-		if letter_nodes[i]:
-			var target_x = (i - current_index) * letter_spacing + 175  # 175 is center position
-			var current_x = letter_nodes[i].rect_position.x
-			letter_nodes[i].rect_position.x = lerp(current_x, target_x, 5.0 * delta)
-			
-			# Update color based on position and status
-			_update_letter_color(i)
-
-func _update_letter_color(index: int):
-	if index >= letter_nodes.size() or not letter_nodes[index]:
-		return
-	
-	var letter_label = letter_nodes[index].get_child(0) as Label
+func _update_letter_color():
 	if not letter_label:
 		return
 	
-	if index < current_index:
-		# Completed letters - fade out as they move left
-		var distance_from_center = abs(letter_nodes[index].rect_position.x - 175)
-		var fade_alpha = max(0.0, 1.0 - (distance_from_center / 200.0))
-		letter_label.modulate = Color(success_color.r, success_color.g, success_color.b, fade_alpha)
-	elif index == current_index:
-		# Current letter - highlight
-		letter_label.modulate = active_color
+	# Change color based on time remaining
+	var time_ratio = input_timer / qte_time
+	if time_ratio > 0.5:
+		letter_label.modulate = Color.WHITE
+	elif time_ratio > 0.25:
+		letter_label.modulate = warning_color
 	else:
-		# Future letters - fade in as they approach from right
-		var distance_from_center = abs(letter_nodes[index].rect_position.x - 175)
-		var fade_alpha = max(0.3, 1.0 - (distance_from_center / 300.0))
-		letter_label.modulate = Color(default_color.r, default_color.g, default_color.b, fade_alpha)
+		letter_label.modulate = fail_color
 
 func _handle_input():
-	var current_letter = current_sequence[current_index]
 	var input_action = input_map.get(current_letter, "")
 	
 	if input_action and Input.is_action_just_pressed(input_action):
@@ -232,53 +154,54 @@ func _handle_input():
 				break
 
 func _handle_correct_input():
-	print("QTE System: Correct input for letter: ", current_sequence[current_index])
+	print("QTE System: Correct input for letter: ", current_letter)
+	
+	# Calculate score bonus based on remaining time
+	var time_ratio = input_timer / qte_time
+	var score_bonus = int(max_score_bonus * time_ratio)
 	
 	# Show success feedback
-	_show_feedback("GOOD!", success_color)
+	_show_feedback("PERFECT! +" + str(score_bonus), success_color)
 	
-	# Move to next letter
-	current_index += 1
-	input_timer = time_per_input
-	
-	# Check if sequence is complete
-	if current_index >= current_sequence.size():
-		_complete_qte(true)
+	# Complete QTE with success
+	_complete_qte(true, score_bonus)
 
 func _handle_wrong_input():
-	print("QTE System: Wrong input! Expected: ", current_sequence[current_index])
+	print("QTE System: Wrong input! Expected: ", current_letter)
 	
 	# Show failure feedback
-	_show_feedback("MISS!", fail_color)
+	_show_feedback("WRONG KEY!", fail_color)
 	
-	# Flash the current letter red
-	if current_index < letter_nodes.size() and letter_nodes[current_index]:
-		var letter_label = letter_nodes[current_index].get_child(0) as Label
-		if letter_label:
-			letter_label.modulate = fail_color
+	# Flash the letter red
+	if letter_label:
+		letter_label.modulate = fail_color
 	
 	# End QTE with failure
-	_complete_qte(false)
+	_complete_qte(false, 0)
 
 func _handle_timeout():
 	print("QTE System: Timeout!")
 	_show_feedback("TOO SLOW!", fail_color)
-	_complete_qte(false)
+	_complete_qte(false, 0)
 
-func _complete_qte(success: bool):
-	print("QTE System: QTE completed with success: ", success)
+func _complete_qte(success: bool, score_bonus: int):
+	print("QTE System: QTE completed with success: ", success, ", bonus: ", score_bonus)
 	
 	is_active = false
 	
+	# Restore original time scale
+	Engine.time_scale = original_time_scale
+	
 	# Emit completion signal
-	emit_signal("qte_completed", success)
+	qte_completed.emit(success, score_bonus)
 	
 	# Hide QTE after a brief delay
 	var timer = Timer.new()
 	timer.wait_time = 1.0
 	timer.one_shot = true
+	timer.process_mode = Node.PROCESS_MODE_ALWAYS  # Continue during pause
 	add_child(timer)
-	timer.connect("timeout", self, "_on_completion_delay_timeout")
+	timer.timeout.connect(_on_completion_delay_timeout)
 	timer.start()
 
 func _on_completion_delay_timeout():
@@ -286,14 +209,14 @@ func _on_completion_delay_timeout():
 
 func _update_progress():
 	if progress_bar:
-		var progress = (input_timer / time_per_input) * 100.0
+		var progress = (input_timer / qte_time) * 100.0
 		progress_bar.value = progress
 		
 		# Change color based on time remaining
-		if progress < 30:
+		if progress < 25:
 			progress_bar.modulate = fail_color
-		elif progress < 60:
-			progress_bar.modulate = Color.orange
+		elif progress < 50:
+			progress_bar.modulate = warning_color
 		else:
 			progress_bar.modulate = success_color
 
@@ -303,10 +226,8 @@ func _show_feedback(text: String, color: Color):
 		feedback_label.modulate = color
 		
 		# Create a tween for feedback animation
-		var tween = Tween.new()
-		add_child(tween)
-		tween.interpolate_property(feedback_label, "modulate", color, Color(color.r, color.g, color.b, 0), 0.8)
-		tween.start()
+		var tween = create_tween()
+		tween.tween_property(feedback_label, "modulate", Color(color.r, color.g, color.b, 0), 0.8)
 
 func show_qte():
 	visible = true
@@ -316,10 +237,8 @@ func hide_qte():
 	visible = false
 	is_active = false
 	
-	# Clear letter nodes
-	for node in letter_nodes:
-		if node:
-			node.queue_free()
-	letter_nodes.clear()
+	# Restore time scale if still active
+	if Engine.time_scale != original_time_scale:
+		Engine.time_scale = original_time_scale
 	
 	print("QTE System: Hiding QTE UI")

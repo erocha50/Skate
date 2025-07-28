@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://b1k1opcerncst"]
+[gd_scene load_steps=21 format=3 uid="uid://b1k1opcerncst"]
 
 [ext_resource type="PackedScene" uid="uid://bkb0bgwpuuc4n" path="res://scenes/camera_controller.tscn" id="1_1lwx6"]
 [ext_resource type="Shader" uid="uid://p071tuygxbtu" path="res://scenes/test_world.gdshader" id="1_dvny0"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://bmr1d5gach4ip" path="res://scenes/player.tscn" id="2_dsnr4"]
 [ext_resource type="PackedScene" uid="uid://bjeyih3voierq" path="res://scenes/rails.tscn" id="3_lf0gk"]
 [ext_resource type="Texture2D" uid="uid://b8thbqivcxa65" path="res://Metro_PSX/Metro_PSX/Textures/Floor.png" id="4_ynswa"]
+[ext_resource type="PackedScene" uid="uid://buopnj0yulwjo" path="res://scenes/qte_system.tscn" id="7_7448y"]
 [ext_resource type="PackedScene" uid="uid://vhe1h3wglknj" path="res://scenes/freezeblocks.tscn" id="7_xwrkq"]
 [ext_resource type="PackedScene" uid="uid://cfaqvg4g1tf74" path="res://scenes/score_ui.tscn" id="8_nrstc"]
 
@@ -111,6 +112,8 @@ mesh = SubResource("BoxMesh_dvny0")
 
 [node name="CSGBakedCollisionShape3D" type="CollisionShape3D" parent="SubViewport/TestWorld/StaticBody3D3"]
 shape = SubResource("ConcavePolygonShape3D_7448y")
+
+[node name="QTESystem" parent="SubViewport/TestWorld" instance=ExtResource("7_7448y")]
 
 [node name="Freezeblocks" parent="." instance=ExtResource("7_xwrkq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.2767, -0.960316, 0.39393)

@@ -7,7 +7,7 @@ signal freeze_block_used
 signal dash_performed
 signal player_became_airborne
 signal player_landed
-signal qte_trick_completed(success: bool)
+signal qte_trick_completed(success: bool, score_bonus: int)
 
 # Movement parameters
 @export var move_speed: float = 15.0
@@ -344,9 +344,9 @@ func _start_qte():
 	
 	qte_system.start_qte()
 
-func _on_qte_completed(success: bool):
-	print("QTE completed with success: ", success)
-	qte_trick_completed.emit(success)
+func _on_qte_completed(success: bool, score_bonus: int):
+	print("QTE completed with success: ", success, ", score bonus: ", score_bonus)
+	qte_trick_completed.emit(success, score_bonus)
 	is_qte_active = false
 
 func _start_dash():
@@ -497,3 +497,9 @@ func _respawn_player():
 func set_spawn_point(new_spawn_point: Vector3):
 	spawn_point = new_spawn_point
 	print("Spawn point updated to: ", spawn_point)
+
+func set_qte_system(qte: Control):
+	qte_system = qte
+	if qte_system:
+		qte_system.qte_completed.connect(_on_qte_completed)
+		print("QTE system connected to player")

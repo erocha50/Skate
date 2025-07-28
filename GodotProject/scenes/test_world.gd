@@ -1,84 +1,34 @@
-extends Node
+extends Node3D
 
-# Camera references - use get_node_or_null for safety
-@onready var menu_camera = get_node_or_null("MenuCamera")  # Update path as needed
-@onready var game_camera_controller = get_node_or_null("GameCameraController")  # Update path as needed
-@onready var player = get_node_or_null("Player")  # Update path as needed
-
-# Menu camera positions
-var menu_camera_position: Vector3
-var menu_camera_rotation: Vector3
+# Game system references
+@onready var player = $Player
+@onready var camera_controller = $CameraController  
+@onready var qte_system = $QTESystem
+@onready var score_ui = get_node("../../../ScoreUI")  # Navigate up to the UI layer
 
 func _ready():
-	# Check if essential nodes exist
-	if menu_camera == null:
-		print("Error: MenuCamera node not found! Check node path.")
-		return
+	print("Test World initializing...")
 	
-	if game_camera_controller == null:
-		print("Error: GameCameraController node not found! Check node path.")
-		return
+	# Setup player systems
+	if player and qte_system:
+		player.set_qte_system(qte_system)
+		print("QTE system connected to player")
+	else:
+		if not player:
+			print("ERROR: Player node not found!")
+		if not qte_system:
+			print("ERROR: QTE system node not found!")
 	
-	if player == null:
-		print("Error: Player node not found! Check node path.")
-		return
+	# Verify other connections
+	if score_ui:
+		print("Score UI found and should auto-connect to player")
+	else:
+		print("WARNING: Score UI not found at expected path")
 	
-	# Set up menu camera positions
-	menu_camera_position = Vector3(0, 8, 8)  # High up, looking at menu focus
-	menu_camera_rotation = Vector3(-30, 0, 0)  # Looking down at an angle
-	
-	# Position menu camera
-	menu_camera.position = menu_camera_position
-	menu_camera.rotation_degrees = menu_camera_rotation
-	menu_camera.look_at(menu_camera.global_position, Vector3.UP)
-	
-	# Disable game camera initially
-	game_camera_controller.set_process(false)
-	game_camera_controller.get_node("Camera3D").current = false
-	menu_camera.current = true
-	
-	# Disable player physics initially
-	player.freeze_mode = RigidBody3D.FREEZE_MODE_KINEMATIC
-	player.freeze = true
+	print("Test World initialization complete")
 
-func _on_play_pressed():
-	_start_camera_transition()
-
-func _on_settings_pressed():
-	# Handle settings logic here
-	pass
-
-func _on_quit_pressed():
-	get_tree().quit()
-
-func _on_back_pressed():
-	# Handle back button logic here
-	pass
-
-func _start_camera_transition():
-	if menu_camera == null or game_camera_controller == null:
-		print("Error: Camera nodes not available for transition")
-		return
-	
-	# Enable game camera and disable menu camera
-	menu_camera.current = false
-	game_camera_controller.get_node("Camera3D").current = true
-	game_camera_controller.set_process(true)
-	
-	# Enable player physics
-	if player != null:
-		player.freeze = false
-
-func _update_camera_position():
-	if menu_camera == null:
-		return
-	
-	# Update menu camera position logic here
-	pass
-
-func _update_camera_rotation():
-	if menu_camera == null:
-		return
-	
-	# Update menu camera rotation logic here
-	pass
+func _input(event):
+	# Debug: Allow manual QTE trigger for testing
+	if event.is_action_pressed("ui_accept") and qte_system:
+		print("Manual QTE trigger (for testing)")
+		qte_system.start_qte()

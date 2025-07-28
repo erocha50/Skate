@@ -53,7 +53,8 @@ var trick_box: ColorRect
 var multiplier_decay_timer: float = 0.0
 var trick_diff = {
 	"RAIL_GRIND": "EASY", "FREEZE_BLOCK": "MEDIUM", "DASH": "EASY", "AIR_TIME": "EASY",
-	"LONG_GRIND": "HARD", "AIR_TIME_BONUS": "MEDIUM", "COMBO_TRICK": "HARD", "STYLE_COMBO": "INSANE"
+	"LONG_GRIND": "HARD", "AIR_TIME_BONUS": "MEDIUM", "COMBO_TRICK": "HARD", "STYLE_COMBO": "INSANE",
+	"QTE_TRICK_SUCCESS": "HARD", "QTE_TRICK_FAIL": "EASY"
 }
 
 func _ready():
@@ -100,8 +101,8 @@ func _setup_ui():
 
 func _connect_signals():
 	if not player: return
-	var signals = ["rail_grind_started", "rail_grind_ended", "freeze_block_used", "dash_performed", "player_became_airborne", "player_landed"]
-	var methods = [_on_rail_grind_started, _on_rail_grind_ended, _on_freeze_block_used, _on_dash_performed, _on_became_airborne, _on_landed]
+	var signals = ["rail_grind_started", "rail_grind_ended", "freeze_block_used", "dash_performed", "player_became_airborne", "player_landed", "qte_trick_completed"]
+	var methods = [_on_rail_grind_started, _on_rail_grind_ended, _on_freeze_block_used, _on_dash_performed, _on_became_airborne, _on_landed, _on_qte_trick_completed]
 	for i in signals.size():
 		if player.has_signal(signals[i]): player.connect(signals[i], methods[i])
 
@@ -335,6 +336,14 @@ func _on_freeze_block_used(): _add_score("FREEZE_BLOCK", 25)
 func _on_dash_performed(): _add_score("DASH", 10)
 func _on_became_airborne(): pass
 func _on_landed(): _add_score("AIR_TIME", 20)
+
+func _on_qte_trick_completed(success: bool, score_bonus: int):
+	if success:
+		_add_score("QTE_TRICK_SUCCESS", 50 + score_bonus)
+		print("QTE Success! Base score: 50, Bonus: ", score_bonus)
+	else:
+		_add_score("QTE_TRICK_FAIL", 5)
+		print("QTE Failed! Minimal score: 5")
 
 func add_custom_trick(trick: String, points: int, diff: String = "MEDIUM"):
 	trick_diff[trick] = diff
