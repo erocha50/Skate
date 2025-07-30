@@ -42,43 +42,135 @@ func _ready():
 	
 	# Setup UI elements
 	_setup_ui()
+	
+	# Debug print
+	print("QTE System initialized")
 
 func _setup_ui():
-	# Center the container on screen
-	if qte_container:
-		qte_container.anchors_preset = Control.PRESET_CENTER
-		qte_container.size = Vector2(300, 200)
-		qte_container.position = qte_container.position - qte_container.size / 2
+	# Make sure we have all required nodes
+	if not qte_container:
+		print("ERROR: QTEContainer not found! Creating basic UI...")
+		_create_basic_ui()
+		return
+	
+	print("QTE System: Setting up UI with container: ", qte_container.name)
+	
+	# Make sure the container is visible
+	qte_container.visible = true
+	qte_container.modulate = Color.WHITE
+	
+	# Center the container on screen and make it large enough to see
+	qte_container.anchors_preset = Control.PRESET_CENTER
+	qte_container.size = Vector2(400, 300)  # Made larger
+	qte_container.position = -qte_container.size / 2  # Center it properly
+	
+	print("QTE Container size: ", qte_container.size, ", position: ", qte_container.position)
 	
 	# Setup letter label (large, centered)
 	if letter_label:
 		letter_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		letter_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		letter_label.add_theme_font_size_override("font_size", 72)
+		letter_label.modulate = Color.WHITE
+		letter_label.visible = true
+		print("Letter label configured")
+	else:
+		print("WARNING: LetterLabel not found!")
 	
 	# Setup progress bar
 	if progress_bar:
 		progress_bar.show_percentage = false
 		progress_bar.max_value = 100
+		progress_bar.modulate = Color.WHITE
+		progress_bar.visible = true
+		print("Progress bar configured")
+	else:
+		print("WARNING: ProgressBar not found!")
 	
 	# Setup feedback label
 	if feedback_label:
 		feedback_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		feedback_label.add_theme_font_size_override("font_size", 24)
+		feedback_label.modulate = Color.WHITE
+		feedback_label.visible = true
+		print("Feedback label configured")
+	else:
+		print("WARNING: FeedbackLabel not found!")
 	
 	# Setup background
 	if background:
-		background.color = Color(0, 0, 0, 0.7)  # Semi-transparent dark background
+		background.color = Color(0.2, 0.2, 0.2, 0.9)  # More visible background
+		background.visible = true
+		# Make background fill the container
+		background.anchors_preset = Control.PRESET_FULL_RECT
+		print("Background configured with color: ", background.color)
+	else:
+		print("WARNING: Background not found!")
+
+# Create basic UI if nodes are missing
+func _create_basic_ui():
+	print("Creating basic QTE UI...")
+	
+	# Create container if it doesn't exist
+	if not qte_container:
+		qte_container = Control.new()
+		qte_container.name = "QTEContainer"
+		add_child(qte_container)
+	
+	# Create background
+	if not background:
+		background = ColorRect.new()
+		background.name = "Background"
+		background.color = Color(0.2, 0.2, 0.2, 0.9)
+		qte_container.add_child(background)
+		background.anchors_preset = Control.PRESET_FULL_RECT
+	
+	# Create letter label
+	if not letter_label:
+		letter_label = Label.new()
+		letter_label.name = "LetterLabel"
+		letter_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		letter_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		letter_label.add_theme_font_size_override("font_size", 72)
+		qte_container.add_child(letter_label)
+		letter_label.anchors_preset = Control.PRESET_FULL_RECT
+	
+	# Create feedback label
+	if not feedback_label:
+		feedback_label = Label.new()
+		feedback_label.name = "FeedbackLabel"
+		feedback_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		feedback_label.add_theme_font_size_override("font_size", 24)
+		qte_container.add_child(feedback_label)
+		feedback_label.anchors_preset = Control.PRESET_BOTTOM_WIDE
+		feedback_label.position.y = -50
+	
+	# Create progress bar
+	if not progress_bar:
+		progress_bar = ProgressBar.new()
+		progress_bar.name = "ProgressBar"
+		progress_bar.show_percentage = false
+		progress_bar.max_value = 100
+		qte_container.add_child(progress_bar)
+		progress_bar.anchors_preset = Control.PRESET_TOP_WIDE
+		progress_bar.position.y = 20
+		progress_bar.size.y = 20
+	
+	# Now setup with the created nodes
+	_setup_ui()
 
 func start_qte():
 	if is_active:
+		print("QTE System: Already active, ignoring start request")
 		return
 	
 	print("QTE System: Starting QTE")
+	print("QTE System: Current visibility before start: ", visible)
 	
 	# Store original time scale and slow down game
 	original_time_scale = Engine.time_scale
 	Engine.time_scale = slowdown_factor
+	print("QTE System: Time scale changed from ", original_time_scale, " to ", Engine.time_scale)
 	
 	# Generate random letter
 	current_letter = _generate_random_letter()
@@ -93,7 +185,12 @@ func start_qte():
 	_update_progress()
 	
 	# Clear feedback
-	feedback_label.text = "PRESS " + current_letter.to_upper() + "!"
+	if feedback_label:
+		feedback_label.text = "PRESS " + current_letter.to_upper() + "!"
+		feedback_label.modulate = Color.WHITE
+		print("QTE System: Feedback text set to: ", feedback_label.text)
+	
+	print("QTE System: QTE fully started - visible: ", visible, ", is_active: ", is_active)
 
 func _generate_random_letter() -> String:
 	var letters = ["w", "a", "s", "d"]
@@ -106,6 +203,8 @@ func _setup_letter_display():
 	if letter_label:
 		letter_label.text = current_letter.to_upper()
 		letter_label.modulate = Color.WHITE
+	else:
+		print("ERROR: Cannot setup letter display - letter_label is null!")
 
 func _process(delta):
 	if not is_active:
@@ -144,14 +243,18 @@ func _update_letter_color():
 func _handle_input():
 	var input_action = input_map.get(current_letter, "")
 	
-	if input_action and Input.is_action_just_pressed(input_action):
+	# Check if the correct input is pressed
+	if input_action != "" and Input.is_action_just_pressed(input_action):
 		_handle_correct_input()
-	else:
-		# Check for wrong input
-		for letter in input_map.keys():
-			if letter != current_letter and Input.is_action_just_pressed(input_map[letter]):
+		return
+	
+	# Check for wrong input
+	for letter in input_map.keys():
+		if letter != current_letter:
+			var wrong_action = input_map[letter]
+			if Input.is_action_just_pressed(wrong_action):
 				_handle_wrong_input()
-				break
+				return
 
 func _handle_correct_input():
 	print("QTE System: Correct input for letter: ", current_letter)
@@ -205,35 +308,57 @@ func _complete_qte(success: bool, score_bonus: int):
 	timer.start()
 
 func _on_completion_delay_timeout():
+	print("HIDING ON COMPLETEON DELAY TIMEOUT")
 	hide_qte()
+	# Clean up the timer
+	var timer_nodes = get_children().filter(func(node): return node is Timer)
+	for timer in timer_nodes:
+		if timer.is_connected("timeout", _on_completion_delay_timeout):
+			timer.queue_free()
 
 func _update_progress():
-	if progress_bar:
-		var progress = (input_timer / qte_time) * 100.0
-		progress_bar.value = progress
+	if not progress_bar:
+		return
 		
-		# Change color based on time remaining
-		if progress < 25:
-			progress_bar.modulate = fail_color
-		elif progress < 50:
-			progress_bar.modulate = warning_color
-		else:
-			progress_bar.modulate = success_color
+	var progress = (input_timer / qte_time) * 100.0
+	progress_bar.value = progress
+	
+	# Change color based on time remaining
+	if progress < 25:
+		progress_bar.modulate = fail_color
+	elif progress < 50:
+		progress_bar.modulate = warning_color
+	else:
+		progress_bar.modulate = success_color
 
 func _show_feedback(text: String, color: Color):
-	if feedback_label:
-		feedback_label.text = text
-		feedback_label.modulate = color
+	if not feedback_label:
+		return
 		
-		# Create a tween for feedback animation
-		var tween = create_tween()
-		tween.tween_property(feedback_label, "modulate", Color(color.r, color.g, color.b, 0), 0.8)
+	feedback_label.text = text
+	feedback_label.modulate = color
+	
+	# Create a tween for feedback animation
+	var tween = create_tween()
+	tween.tween_property(feedback_label, "modulate", Color(color.r, color.g, color.b, 0), 0.8)
 
 func show_qte():
 	visible = true
-	print("QTE System: Showing QTE UI")
+	modulate = Color.WHITE  # Make sure it's not transparent
+	
+	# Force the container to be visible too
+	if qte_container:
+		qte_container.visible = true
+		qte_container.modulate = Color.WHITE
+		print("QTE System: QTEContainer made visible")
+	
+	# Make sure we're on top of everything
+	move_to_front()
+	
+	print("QTE System: Showing QTE UI - visible: ", visible, ", modulate: ", modulate)
 
 func hide_qte():
+	
 	visible = false
 	is_active = false
 	
@@ -242,3 +367,12 @@ func hide_qte():
 		Engine.time_scale = original_time_scale
 	
 	print("QTE System: Hiding QTE UI")
+
+# Force stop QTE (for cleanup purposes)
+func force_stop_qte():
+	if is_active:
+		print("QTE System: Force stopping QTE")
+		is_active = false
+		Engine.time_scale = original_time_scale
+		print("HIDING FORCE STOP QTE")
+		hide_qte()

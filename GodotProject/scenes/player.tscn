@@ -1,8 +1,9 @@
-[gd_scene load_steps=7 format=3 uid="uid://bmr1d5gach4ip"]
+[gd_scene load_steps=8 format=3 uid="uid://bmr1d5gach4ip"]
 
 [ext_resource type="Script" uid="uid://cnu838fuu2715" path="res://scenes/player2.gd" id="1_dqkch"]
 [ext_resource type="PackedScene" uid="uid://blav75g3bkin5" path="res://male_casual/male_casual.fbx" id="2_g2els"]
 [ext_resource type="PackedScene" uid="uid://d1vjfobaytekd" path="res://skateboard test.fbx" id="3_qhqgy"]
+[ext_resource type="PackedScene" uid="uid://buopnj0yulwjo" path="res://scenes/qte_system.tscn" id="4_dqkch"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_4flbx"]
 friction = 0.0
@@ -42,5 +43,13 @@ transform = Transform3D(-1.18362e-08, 0, -0.27078, 0, 0.270117, 0, 0.27078, 0, -
 [node name="SkateboardCollision" type="CollisionShape3D" parent="."]
 transform = Transform3D(-2.2578e-08, 0, -0.27078, 0, 0.177574, 0, 0.516524, 0, -1.18362e-08, 0, -0.0535547, 0)
 shape = SubResource("BoxShape3D_qhqgy")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="QTESystem" parent="CanvasLayer" instance=ExtResource("4_dqkch")]
+offset_left = 576.0
+offset_top = 324.0
+offset_right = 576.0
+offset_bottom = 324.0
 
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

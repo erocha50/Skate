@@ -36,6 +36,7 @@ signal qte_trick_completed(success: bool, score_bonus: int)
 
 # QTE parameters
 @export var qte_cooldown: float = 2.0
+@export var qte_manual_trigger_key: String = "qte_trigger"  # Add this for manual testing
 
 # Spawn system parameters
 @export var spawn_point: Vector3 = Vector3(0, 1, 0)
@@ -91,6 +92,9 @@ func _ready():
 	axis_lock_angular_x = true
 	axis_lock_angular_y = true
 	axis_lock_angular_z = true
+	
+	# Try to find QTE system automatically
+	_find_qte_system()
 	
 	# Debug: Check if nodes exist
 	if not skateboard_collision:
@@ -149,24 +153,23 @@ func _physics_process(delta):
 	# Emit scoring signals
 	if was_grounded_last_frame and not is_grounded:
 		player_became_airborne.emit()
-		print("emitting player became airborne")
+
 	elif not was_grounded_last_frame and is_grounded:
 		player_landed.emit()
-		print("emitting player landed")
+
 	
 	if not was_on_rail_last_frame and is_on_rail:
 		rail_grind_started.emit()
-		print("emitting rail grind started")
+
 		
 	elif was_on_rail_last_frame and not is_on_rail:
 		rail_grind_ended.emit()
-		print("emitting rail grind ended")
+
 		# Reset rotations when leaving rail
 		skateboard_target_rotation = 0.0
 		player_target_rotation = 0.0
-		if is_qte_active:
-			qte_system.hide()
-			is_qte_active = false
+		# DON'T hide QTE when leaving rail - let it complete naturally
+		# The QTE should continue running even after leaving the rail
 	
 	# Store states for next frame
 	was_grounded_last_frame = is_grounded
@@ -201,22 +204,37 @@ func _physics_process(delta):
 		apply_central_force(Vector3(0, (new_y_velocity - current_velocity.y) * mass / delta, 0))
 
 	# Handle inputs
-	if Input.is_action_just_pressed("qte_trigger") and is_on_rail and not is_qte_active and qte_cooldown_timer <= 0:
+	# Manual QTE trigger for testing (optional)
+	if Input.is_action_just_pressed(qte_manual_trigger_key) and is_on_rail and not is_qte_active and qte_cooldown_timer <= 0:
+		print("Manual QTE trigger activated!")
 		_start_qte()
-
+	
 	if Input.is_action_just_pressed("dash") and dash_cooldown_timer <= 0 and not is_dashing and not is_on_rail:
 		_start_dash()
 
-	if Input.is_action_just_pressed("jump") and is_grounded:
-		if is_on_rail:
-			if is_at_rail_ledge():
+	if Input.is_action_just_pressed("jump"):
+		if is_grounded:
+			if is_on_rail:
+				print("Jump pressed while on rail - triggering QTE!")
+				# Trigger QTE when jumping from rail
+				if not is_qte_active and qte_cooldown_timer <= 0:
+					_start_qte()
+				
 				apply_central_impulse(Vector3.UP * jump_force)
 				ground_check.enabled = false
-				$Timer.start()
+				# Make sure we have a timer node or create one
+				if has_node("Timer"):
+					$Timer.start()
+				else:
+					var timer = Timer.new()
+					timer.name = "Timer"
+					timer.wait_time = 0.1
+					timer.one_shot = true
+					add_child(timer)
+					timer.timeout.connect(_on_timer_timeout)
+					timer.start()
 			else:
-				print("Jump blocked - not at rail ledge")
-		else:
-			apply_central_impulse(Vector3(0, jump_force * mass, 0))
+				apply_central_impulse(Vector3(0, jump_force * mass, 0))
 
 	if Input.is_action_just_pressed("reset"):
 		_respawn_player()
@@ -230,8 +248,6 @@ func _physics_process(delta):
 
 # Calculate both skateboard and player rotation angles
 func _calculate_rotation_angles():
-	print("=== CALCULATING ROTATION ANGLES ===")
-	print("Rail normal: ", rail_normal)
 	
 	# For a side-scrolling game, we want to rotate around Z based on the rail's tilt
 	# If the rail slopes up/down, the normal will tilt in the X direction
@@ -247,17 +263,9 @@ func _calculate_rotation_angles():
 		skateboard_target_rotation = base_rotation
 		# Player rotation is now a fraction of the skateboard's rotation based on player_lean_factor
 		player_target_rotation = base_rotation * clamp(player_lean_factor, 0.0, 1.0)
-		
-		print("Rail is tilted! Normal.x: ", rail_normal.x)
-		print("Angle from up: ", rad_to_deg(angle_from_up), " degrees")
-		print("Skateboard target Z rotation: ", rad_to_deg(skateboard_target_rotation), " degrees")
-		print("Player target Z rotation: ", rad_to_deg(player_target_rotation), " degrees")
 	else:
 		skateboard_target_rotation = 0.0
 		player_target_rotation = 0.0
-		print("Rail is flat (normal.x near 0)")
-	
-	print("=== END CALCULATION ===\n")
 
 # Handle all rotations including player
 func _handle_rotations(delta):
@@ -267,31 +275,27 @@ func _handle_rotations(delta):
 			var current_rotation = skateboard_collision.rotation
 			var new_z_rotation = lerp_angle(current_rotation.z, skateboard_target_rotation, skateboard_rotation_speed * delta)
 			skateboard_collision.rotation = Vector3(current_rotation.x, current_rotation.y, new_z_rotation)
-			if abs(skateboard_target_rotation) > 0.01:
-				print("Skateboard collision Z: ", rad_to_deg(current_rotation.z), " -> ", rad_to_deg(new_z_rotation))
+			
 		
 		if skateboard_model:
 			var current_rotation = skateboard_model.rotation
 			var new_z_rotation = lerp_angle(current_rotation.z, skateboard_target_rotation, skateboard_rotation_speed * delta)
 			skateboard_model.rotation = Vector3(current_rotation.x, current_rotation.y, new_z_rotation)
-			if abs(skateboard_target_rotation) > 0.01:
-				print("Skateboard model Z: ", rad_to_deg(current_rotation.z), " -> ", rad_to_deg(new_z_rotation))
+			
 		
 		# Rotate player collision
 		if player_collision:
 			var current_rotation = player_collision.rotation
 			var new_z_rotation = lerp_angle(current_rotation.z, player_target_rotation, player_rotation_speed * delta)
 			player_collision.rotation = Vector3(current_rotation.x, current_rotation.y, new_z_rotation)
-			if abs(player_target_rotation) > 0.01:
-				print("Player collision Z: ", rad_to_deg(current_rotation.z), " -> ", rad_to_deg(new_z_rotation))
+			
 		
 		# Rotate player model
 		if player_model:
 			var current_rotation = player_model.rotation
 			var new_z_rotation = lerp_angle(current_rotation.z, player_target_rotation, player_rotation_speed * delta)
 			player_model.rotation = Vector3(current_rotation.x, current_rotation.y, new_z_rotation)
-			if abs(player_target_rotation) > 0.01:
-				print("Player model Z: ", rad_to_deg(current_rotation.z), " -> ", rad_to_deg(new_z_rotation))
+			
 		
 		# Keep existing mesh rotation if you still have it
 		if player_mesh:
@@ -336,18 +340,24 @@ func _handle_rotations(delta):
 
 func _start_qte():
 	if is_qte_active or not qte_system:
+		print("QTE start failed - is_qte_active: ", is_qte_active, ", qte_system exists: ", qte_system != null)
 		return
 	
-	print("Starting QTE!")
+	print("Starting QTE system!")
 	is_qte_active = true
 	qte_cooldown_timer = qte_cooldown
 	
-	qte_system.start_qte()
+	if qte_system and qte_system.has_method("start_qte"):
+		qte_system.start_qte()
+	else:
+		print("ERROR: QTE system doesn't have start_qte method or is null!")
 
 func _on_qte_completed(success: bool, score_bonus: int):
 	print("QTE completed with success: ", success, ", score bonus: ", score_bonus)
 	qte_trick_completed.emit(success, score_bonus)
 	is_qte_active = false
+	
+	# The QTE system will hide itself after showing feedback
 
 func _start_dash():
 	var input_dir = Input.get_axis("move_left", "move_right")
@@ -371,8 +381,9 @@ func _check_grounded() -> Dictionary:
 		if collider:
 			result.is_on_rail = collider.is_in_group("Rail")
 			result.ground_normal = ground_check.get_collision_normal()
+			# Debug print
 			if result.is_on_rail:
-				print("GROUND CHECK - On rail, normal: ", result.ground_normal)
+				print("Ground check: On rail detected")
 	return result
 
 func _handle_movement(delta):
@@ -406,6 +417,11 @@ func _on_timer_timeout() -> void:
 	ground_check.enabled = true
 
 func is_at_rail_ledge() -> bool:
+	# First, double-check that we're actually on a rail
+	if not is_on_rail:
+		print("is_at_rail_ledge: Not on rail, returning false")
+		return false
+	
 	var forward_distance = 1.0
 	var downward_offset = ground_check_distance
 
@@ -414,7 +430,7 @@ func is_at_rail_ledge() -> bool:
 	forward_check.target_position = Vector3(0, -downward_offset, 0)
 	add_child(forward_check)
 	forward_check.force_raycast_update()
-	var forward_hit = forward_check.is_colliding() and forward_check.get_collider().is_in_group("Rail")
+	var forward_hit = forward_check.is_colliding() and forward_check.get_collider() and forward_check.get_collider().is_in_group("Rail")
 	forward_check.queue_free()
 
 	var far_check = RayCast3D.new()
@@ -422,16 +438,23 @@ func is_at_rail_ledge() -> bool:
 	far_check.target_position = Vector3(0, -downward_offset, 0)
 	add_child(far_check)
 	far_check.force_raycast_update()
-	var far_hit = far_check.is_colliding() and far_check.get_collider().is_in_group("Rail")
+	var far_hit = far_check.is_colliding() and far_check.get_collider() and far_check.get_collider().is_in_group("Rail")
 	far_check.queue_free()
 
 	var is_curve = abs(ground_normal.dot(Vector3.UP) - 1.0) > 0.1
 	var at_ledge = (!forward_hit || (!forward_hit and !far_hit)) && !is_curve
 	
+	print("is_at_rail_ledge debug:")
+	print("  - is_on_rail: ", is_on_rail)
+	print("  - forward_hit: ", forward_hit)
+	print("  - far_hit: ", far_hit)
+	print("  - is_curve: ", is_curve)
+	print("  - at_ledge result: ", at_ledge)
+	
 	if at_ledge:
 		print("Ledge detected")
 	else:
-		print("Not at ledge, possibly on curve: forward_hit=", forward_hit, ", far_hit=", far_hit, ", is_curve=", is_curve)
+		print("Not at ledge")
 	
 	return at_ledge
 
@@ -488,7 +511,7 @@ func _respawn_player():
 	dash_timer = 0.0
 	
 	if is_qte_active and qte_system:
-		qte_system.hide()
+		qte_system.force_stop_qte()
 		is_qte_active = false
 	
 	if ground_check:
@@ -498,8 +521,59 @@ func set_spawn_point(new_spawn_point: Vector3):
 	spawn_point = new_spawn_point
 	print("Spawn point updated to: ", spawn_point)
 
+# Function to automatically find QTE system
+func _find_qte_system():
+	# First, try to find it as a child of this node
+	qte_system = get_node_or_null("QTESystem")
+	if qte_system:
+		print("Found QTE system as child of player")
+		_connect_qte_system()
+		return
+	
+	# Try to find it as a sibling (same parent)
+	if get_parent():
+		qte_system = get_parent().get_node_or_null("QTESystem")
+		if qte_system:
+			print("Found QTE system as sibling of player")
+			_connect_qte_system()
+			return
+	
+	# Try to find it in the scene tree by searching recursively
+	var root = get_tree().current_scene
+	if root:
+		qte_system = _find_node_recursive(root, "QTESystem")
+		if qte_system:
+			print("Found QTE system in scene tree: ", qte_system.name)
+			_connect_qte_system()
+			return
+	
+	print("WARNING: QTE system not found! Please make sure it's added to the scene.")
+	print("Looking for a node named 'QTESystem' - you can also manually connect it using set_qte_system()")
+
+# Recursive function to find a node by name
+func _find_node_recursive(node: Node, target_name: String) -> Node:
+	if node.name == target_name:
+		return node
+	
+	for child in node.get_children():
+		var result = _find_node_recursive(child, target_name)
+		if result:
+			return result
+	
+	return null
+
+# Helper function to connect the QTE system
+func _connect_qte_system():
+	if qte_system and qte_system.has_signal("qte_completed"):
+		if not qte_system.qte_completed.is_connected(_on_qte_completed):
+			qte_system.qte_completed.connect(_on_qte_completed)
+		print("QTE system connected successfully!")
+	else:
+		print("ERROR: QTE system found but doesn't have qte_completed signal!")
+
 func set_qte_system(qte: Control):
 	qte_system = qte
 	if qte_system:
-		qte_system.qte_completed.connect(_on_qte_completed)
-		print("QTE system connected to player")
+		_connect_qte_system()
+	else:
+		print("ERROR: Attempted to set null QTE system")
