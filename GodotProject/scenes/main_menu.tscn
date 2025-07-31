@@ -25,6 +25,7 @@ offset_bottom = 175.0
 text = "Start"
 
 [node name="Options" type="Button" parent="Button_Manager"]
+layout_mode = 0
 offset_left = 572.0
 offset_top = 214.0
 offset_right = 634.0
@@ -33,6 +34,7 @@ text = "Option
 "
 
 [node name="Exit" type="Button" parent="Button_Manager"]
+layout_mode = 0
 offset_left = 585.0
 offset_top = 288.0
 offset_right = 622.0
@@ -47,6 +49,7 @@ text = "Exit
 [node name="1" type="ColorRect" parent="CanvasLayer"]
 offset_right = 40.0
 offset_bottom = 40.0
+metadata/_edit_use_anchors_ = true
 
 [node name="Control" type="Control" parent="CanvasLayer"]
 layout_mode = 3
