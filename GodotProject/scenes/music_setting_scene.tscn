@@ -1,9 +1,13 @@
-[gd_scene load_steps=8 format=3 uid="uid://c0prkli6fptw1"]
+[gd_scene load_steps=12 format=3 uid="uid://c0prkli6fptw1"]
 
 [ext_resource type="Script" uid="uid://dhw2a6548bpjk" path="res://music_setting_scene.gd" id="1_b528y"]
 [ext_resource type="Script" uid="uid://barf8hd4ni388" path="res://scenes/music_disc_1.gd" id="2_dftmq"]
 [ext_resource type="Script" uid="uid://c0d58qg6133av" path="res://scenes/camera_controller.gd" id="2_i10a1"]
 [ext_resource type="Script" uid="uid://lcs5tcwjtdn0" path="res://scenes/disc_container.gd" id="3_fulkt"]
+[ext_resource type="Script" uid="uid://dnji37d8n73y" path="res://scenes/disc_container_2.gd" id="5_fhlci"]
+[ext_resource type="Script" uid="uid://bih1b7tboisyf" path="res://scenes/music_disc_2.gd" id="5_jddqi"]
+[ext_resource type="Script" uid="uid://cmepynq6ne3o8" path="res://scenes/music_disc_3.gd" id="6_rxxet"]
+[ext_resource type="Script" uid="uid://yuf84j460ir2" path="res://scenes/disc_container_3.gd" id="7_r7kyc"]
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_dftmq"]
 
@@ -76,11 +80,11 @@ offset_bottom = 8.0
 
 [node name="DiscContainer2" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.191015, -0.981587, 0, 0.981587, 0.191015, 0, 0, 0)
-script = ExtResource("3_fulkt")
+script = ExtResource("5_fhlci")
 
 [node name="MusicDisc2" type="Node3D" parent="DiscContainer2"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.51346, 0, 0)
-script = ExtResource("2_dftmq")
+script = ExtResource("5_jddqi")
 
 [node name="DiscMesh" type="MeshInstance3D" parent="DiscContainer2/MusicDisc2"]
 transform = Transform3D(1, 0, 0, 0, 0.009, 2.57669e-08, 0, -2.31902e-10, 1, 0, 0.054212, -0.278585)
@@ -102,26 +106,26 @@ text = "music
 
 [node name="DiscContainer3" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.191015, -0.981587, 0, 0.981587, 0.191015, -6, 0, 0)
-script = ExtResource("3_fulkt")
+script = ExtResource("7_r7kyc")
 
-[node name="MusicDisc2" type="Node3D" parent="DiscContainer3"]
+[node name="MusicDisc3" type="Node3D" parent="DiscContainer3"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.66473, 0, 0)
-script = ExtResource("2_dftmq")
+script = ExtResource("6_rxxet")
 
-[node name="DiscMesh" type="MeshInstance3D" parent="DiscContainer3/MusicDisc2"]
+[node name="DiscMesh" type="MeshInstance3D" parent="DiscContainer3/MusicDisc3"]
 transform = Transform3D(1, 0, 0, 0, 0.009, 2.57669e-08, 0, -2.31902e-10, 1, 0, 0.054212, -0.278585)
 mesh = SubResource("CylinderMesh_dftmq")
 
-[node name="DiscCollision" type="StaticBody3D" parent="DiscContainer3/MusicDisc2/DiscMesh"]
+[node name="DiscCollision" type="StaticBody3D" parent="DiscContainer3/MusicDisc3/DiscMesh"]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="DiscContainer3/MusicDisc2/DiscMesh/DiscCollision"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DiscContainer3/MusicDisc3/DiscMesh/DiscCollision"]
 shape = SubResource("CylinderShape3D_bw7xw")
 
-[node name="AlbumArt" type="MeshInstance3D" parent="DiscContainer3/MusicDisc2"]
+[node name="AlbumArt" type="MeshInstance3D" parent="DiscContainer3/MusicDisc3"]
 transform = Transform3D(0.999927, -0.00147481, -0.0071315, 0.00861744, 0.153875, -0.108894, 0.00846479, 0.0175661, 0.953289, 0.00307047, 0.0774233, 0.127564)
 mesh = SubResource("BoxMesh_i10a1")
 
-[node name="DiscLabel" type="Label3D" parent="DiscContainer3/MusicDisc2"]
+[node name="DiscLabel" type="Label3D" parent="DiscContainer3/MusicDisc3"]
 transform = Transform3D(0.942053, 0.275476, 0.191439, -0.297942, 0.424815, 0.854847, 0.154163, -0.862349, 0.482274, -1.25856, 0.054212, -0.278585)
 text = "music
 "

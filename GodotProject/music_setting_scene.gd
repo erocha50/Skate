@@ -11,28 +11,23 @@ var is_dragging = false
 var drag_start_position = Vector2.ZERO
 var container_start_position = Vector3.ZERO
 var current_disc_index = 0
-var total_discs = 0
 var disc_spacing = 3.0
 var scroll_sensitivity = 0.01
 var target_position = Vector3.ZERO
 var scroll_speed = 5.0
 
-# Infinite scrolling variables
-var visible_discs = []  # Array to track visible disc nodes
-var center_disc_offset = 0.0  # Tracks the logical position for infinite scroll
-
-# Music data - add your own tracks here
+# Fixed music data - each disc gets one specific track
 var music_tracks = [
 	{
 		"title": "Neon Dreams",
-		"artist": "Synthwave Studio",
+		"artist": "Synthwave Studio", 
 		"audio_path": "res://audio/track1.ogg",
 		"album_art": "res://textures/album1.png"
 	},
 	{
 		"title": "Digital Horizon",
-		"artist": "Cyber Collective", 
-		"audio_path": "res://audio/track2.ogg",
+		"artist": "Cyber Collective",
+		"audio_path": "res://audio/track2.ogg", 
 		"album_art": "res://textures/album2.png"
 	},
 	{
@@ -40,20 +35,10 @@ var music_tracks = [
 		"artist": "Future Beats",
 		"audio_path": "res://audio/track3.ogg",
 		"album_art": "res://textures/album3.png"
-	},
-	{
-		"title": "Cosmic Journey",
-		"artist": "Space Sounds",
-		"audio_path": "res://audio/track4.ogg",
-		"album_art": "res://textures/album4.png"
-	},
-	{
-		"title": "Retro Wave",
-		"artist": "80s Revival",
-		"audio_path": "res://audio/track5.ogg",
-		"album_art": "res://textures/album5.png"
 	}
 ]
+
+var disc_nodes = []  # Array to hold our 3 disc nodes
 
 func _ready():
 	setup_discs()
@@ -64,99 +49,45 @@ func _ready():
 		play_button.pressed.connect(_on_play_button_pressed)
 
 func setup_discs():
-	total_discs = music_tracks.size()
+	# Let the disc container handle positioning
+	disc_container.setup_disc_positions()
 	
-	# Use only existing disc nodes in the scene - don't create new ones
-	var existing_discs = disc_container.get_child_count()
-	var disc_pool_size = existing_discs  # Use whatever discs you have
-	var center_index = disc_pool_size / 2  # Middle disc index
-	
-	# Setup existing disc nodes
-	for i in range(existing_discs):
+	# Get all disc nodes from the container
+	for i in range(disc_container.get_child_count()):
 		var disc = disc_container.get_child(i)
-		visible_discs.append(disc)
+		if disc.name.begins_with("MusicDisc"):
+			disc_nodes.append(disc)
+	
+	# Ensure we have exactly 3 discs
+	if disc_nodes.size() != 3:
+		print("Warning: Expected 3 discs, found ", disc_nodes.size())
+		return
+	
+	# Setup each disc with its specific track
+	for i in range(disc_nodes.size()):
+		var disc = disc_nodes[i]
 		
-		# Position discs in a line
-		disc.position.x = (i - center_index) * disc_spacing
-		
-		# Setup initial disc data (wrap around music tracks)
-		var track_index = (i - center_index + current_disc_index) % total_discs
-		if track_index < 0:
-			track_index += total_discs
-		
-		# Check if disc has setup_disc method before calling it
+		# Each disc gets its own specific track (no rotation/changing)
 		if disc.has_method("setup_disc"):
-			disc.setup_disc(music_tracks[track_index], track_index)
+			disc.setup_disc(music_tracks[i], i)
+			# Connect signals
 			if not disc.disc_selected.is_connected(_on_disc_selected):
 				disc.disc_selected.connect(_on_disc_selected)
 			if not disc.disc_hovered.is_connected(_on_disc_hovered):
 				disc.disc_hovered.connect(_on_disc_hovered)
 		else:
-			# Fallback: manually set basic properties
-			setup_disc_fallback(disc, music_tracks[track_index], track_index)
+			setup_disc_fallback(disc, music_tracks[i], i)
 	
-	target_position = disc_container.position
+	# Start with middle disc selected
+	current_disc_index = 1
+	disc_container.center_disc(current_disc_index)
+	update_disc_selection()
 
 func setup_disc_fallback(disc: Node3D, track_data: Dictionary, track_index: int):
 	# Fallback method to setup disc without the script
 	var label = disc.get_node_or_null("DiscLabel")
 	if label and label is Label3D:
 		label.text = track_data.title
-
-func create_disc_node() -> Node3D:
-	# Create a new disc node with the same structure as existing ones
-	var disc = Node3D.new()
-	disc.name = "MusicDisc"
-	
-	# Add DiscMesh
-	var disc_mesh = MeshInstance3D.new()
-	disc_mesh.name = "DiscMesh"
-	var cylinder = CylinderMesh.new()
-	cylinder.top_radius = 1.0
-	cylinder.bottom_radius = 1.0
-	cylinder.height = 0.1
-	disc_mesh.mesh = cylinder
-	disc.add_child(disc_mesh)
-	
-	# Add collision
-	var collision_body = StaticBody3D.new()
-	collision_body.name = "DiscCollision"
-	var collision_shape = CollisionShape3D.new()
-	var cylinder_shape = CylinderShape3D.new()
-	cylinder_shape.height = 0.1
-	cylinder_shape.radius = 1.0
-	collision_shape.shape = cylinder_shape
-	collision_body.add_child(collision_shape)
-	disc_mesh.add_child(collision_body)
-	
-	# Add album art
-	var album_art = MeshInstance3D.new()
-	album_art.name = "AlbumArt"
-	var quad = QuadMesh.new()
-	quad.size = Vector2(1.6, 1.6)
-	album_art.mesh = quad
-	album_art.position.y = 0.06
-	disc.add_child(album_art)
-	
-	# Add label
-	var label = Label3D.new()
-	label.name = "DiscLabel"
-	label.position.y = -0.5
-	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	disc.add_child(label)
-	
-	# Try to attach script - but don't fail if it doesn't work
-	var script_path = "res://music_disc_1.gd"
-	if ResourceLoader.exists(script_path):
-		var script = load(script_path)
-		if script:
-			disc.set_script(script)
-	else:
-		print("Warning: Could not find script at ", script_path, " - disc will have basic functionality only")
-	
-	return disc
-	
-	target_position = disc_container.position
 
 func _input(event):
 	if event is InputEventMouseButton:
@@ -186,105 +117,64 @@ func stop_dragging():
 
 func handle_drag(mouse_pos: Vector2):
 	var delta = (mouse_pos - drag_start_position) * scroll_sensitivity
-	center_disc_offset += delta.x
-	target_position = container_start_position + Vector3(delta.x, 0, 0)
-	
-	# Update disc content based on scroll position
-	update_disc_content()
+	var new_position = container_start_position + Vector3(delta.x, 0, 0)
+	disc_container.set_immediate_position(new_position)
 
 func navigate_disc(direction: int):
-	current_disc_index = (current_disc_index + direction) % total_discs
-	if current_disc_index < 0:
-		current_disc_index += total_discs
+	var new_index = current_disc_index + direction
 	
-	center_disc_offset += direction * disc_spacing
-	target_position.x += direction * disc_spacing
+	# Clamp to valid range (0-2 for 3 discs)
+	new_index = clamp(new_index, 0, disc_nodes.size() - 1)
 	
-	update_disc_content()
-	update_ui()
+	if new_index != current_disc_index:
+		current_disc_index = new_index
+		
+		# Use disc container's method to center the disc
+		disc_container.center_disc(current_disc_index)
+		
+		update_ui()
+		update_disc_selection()
 
 func snap_to_nearest_disc():
-	# Find which disc should be in center based on scroll amount
-	var scroll_offset = center_disc_offset / disc_spacing
-	var nearest_disc = round(scroll_offset)
+	# Use disc container's snap method
+	current_disc_index = disc_container.snap_to_nearest_disc()
 	
-	# Update current disc index
-	current_disc_index = int(nearest_disc) % total_discs
-	if current_disc_index < 0:
-		current_disc_index += total_discs
-	
-	# Snap to exact position
-	center_disc_offset = nearest_disc * disc_spacing
-	target_position.x = container_start_position.x + center_disc_offset
-	
-	update_disc_content()
 	update_ui()
+	update_disc_selection()
 
 func _process(delta):
-	# Smooth movement
-	disc_container.position = disc_container.position.lerp(target_position, scroll_speed * delta)
-	
-	# Continuous content update during dragging
-	if is_dragging:
-		update_disc_content()
-	
-	# Update current disc based on position when not dragging
-	if not is_dragging:
-		var position_offset = disc_container.position.x - container_start_position.x
-		var disc_offset = position_offset / disc_spacing
-		var new_index = int(round(-disc_offset)) % total_discs
-		if new_index < 0:
-			new_index += total_discs
-		
-		if new_index != current_disc_index:
-			current_disc_index = new_index
-			update_ui()
+	# The disc container handles its own smooth movement now
+	pass
 
 func _on_disc_selected(disc_index: int):
-	# Find which visible disc was clicked and update accordingly
-	for i in range(visible_discs.size()):
-		var disc = visible_discs[i]
-		if disc.has_method("get_current_track_index") and disc.get_current_track_index() == disc_index:
-			# Calculate how far to scroll to center this disc
-			var disc_pool_size = visible_discs.size()
-			var center_index = disc_pool_size / 2
-			var scroll_amount = (i - center_index) * disc_spacing
-			
-			center_disc_offset += scroll_amount
-			target_position.x += scroll_amount
-			current_disc_index = disc_index
-			
-			update_ui()
-			play_current_track()
+	# Find which disc was clicked and center it
+	for i in range(disc_nodes.size()):
+		var disc = disc_nodes[i]
+		if disc.has_method("get_current_track_index"):
+			if disc.get_current_track_index() == disc_index:
+				current_disc_index = i
+				break
+		elif i == disc_index:  # Fallback
+			current_disc_index = i
 			break
+	
+	# Use disc container's method to center the disc
+	disc_container.center_disc(current_disc_index)
+	
+	update_ui()
+	update_disc_selection()
+	play_current_track()
 
 func _on_disc_hovered(disc_index: int):
 	# Optional: Show preview info or highlight effect
 	pass
 
-func update_disc_content():
-	# Update which music track each visible disc shows based on scroll position
-	var disc_pool_size = visible_discs.size()
-	var center_index = disc_pool_size / 2
-	var scroll_offset = center_disc_offset / disc_spacing
-	
-	for i in range(visible_discs.size()):
-		var disc = visible_discs[i]
-		var disc_logical_index = int(scroll_offset) + (i - center_index)
-		var track_index = disc_logical_index % total_discs
-		if track_index < 0:
-			track_index += total_discs
-		
-		# Only update if the track changed and disc has the method
-		if disc.has_method("setup_disc"):
-			if disc.has_method("get_current_track_index"):
-				if disc.get_current_track_index() != track_index:
-					disc.setup_disc(music_tracks[track_index], track_index)
-			else:
-				disc.setup_disc(music_tracks[track_index], track_index)
-		else:
-			# Fallback for discs without script
-			setup_disc_fallback(disc, music_tracks[track_index], track_index)
+func update_disc_selection():
+	# Update which disc is selected (only one at a time)
+	for i in range(disc_nodes.size()):
+		var disc = disc_nodes[i]
+		if disc.has_method("set_selected"):
+			disc.set_selected(i == current_disc_index)
 
 func update_ui():
 	if current_disc_index >= 0 and current_disc_index < music_tracks.size():
@@ -296,13 +186,7 @@ func update_ui():
 		if artist_name:
 			artist_name.text = track.artist
 		
-		# Update disc highlights - center disc is always selected
-		var disc_pool_size = visible_discs.size()
-		var center_index = disc_pool_size / 2
-		for i in range(visible_discs.size()):
-			var disc = visible_discs[i]
-			if disc.has_method("set_selected"):
-				disc.set_selected(i == center_index)
+		update_disc_selection()
 
 func _on_play_button_pressed():
 	play_current_track()
@@ -321,6 +205,9 @@ func play_current_track():
 					play_button.text = "♪ Playing"
 		else:
 			print("Could not find audio file: ", track.audio_path)
+			# For testing, you can comment out the above and uncomment below
+			# print("Would play: ", track.title, " by ", track.artist)
 
 func _on_audio_finished():
-	play_button.text = "Play"
+	if play_button:
+		play_button.text = "Play"
