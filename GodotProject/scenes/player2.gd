@@ -10,16 +10,16 @@ signal player_landed
 signal qte_trick_completed(success: bool, score_bonus: int)
 
 # Movement parameters
-@export var move_speed: float = 15.0
+@export var max_speed: float = 15.0
+@export var acceleration_force: float = 25.0
+@export var deceleration_force: float = 15.0
+@export var air_control_multiplier: float = 0.4
 @export var rail_move_speed: float = 25.0
 @export var jump_force: float = 10.0
 @export var freeze_jump_force: float = 6.0
 @export var ground_gravity: float = 9.8
 @export var jump_gravity: float = 6.0
 @export var max_fall_speed: float = 15.0
-@export var acceleration: float = 20.0
-@export var friction: float = 2.0
-@export var air_friction: float = 2.0
 @export var rail_force: float = 100.0
 @export var mesh_tilt_speed: float = 10.0
 
@@ -54,7 +54,6 @@ signal qte_trick_completed(success: bool, score_bonus: int)
 var is_grounded: bool = false
 var is_on_rail: bool = false
 var ground_normal: Vector3 = Vector3.UP
-var move_input: float = 0.0
 
 # Rail normal tracking
 var rail_normal: Vector3 = Vector3.UP
@@ -186,15 +185,9 @@ func _physics_process(delta):
 	var gravity_multiplier = dash_gravity_reduction if is_dashing else 1.0
 	
 	if not is_grounded:
-		var air_input = Input.get_axis("move_left", "move_right")
 		var current_velocity = linear_velocity
-		
 		var new_y_velocity = max(current_velocity.y - ground_gravity * gravity_multiplier * delta, -max_fall_speed)
 		apply_central_force(Vector3(0, (new_y_velocity - current_velocity.y) * mass / delta, 0))
-		
-		if abs(air_input) > 0.1:
-			var air_control_force = air_input * acceleration * 0.3 * mass
-			apply_central_force(Vector3(air_control_force, 0, 0))
 		
 	elif is_on_rail:
 		apply_central_force(-ground_normal * rail_force * mass * gravity_multiplier)
@@ -360,7 +353,13 @@ func _on_qte_completed(success: bool, score_bonus: int):
 	# The QTE system will hide itself after showing feedback
 
 func _start_dash():
-	var input_dir = Input.get_axis("move_left", "move_right")
+	# For dash, we still want to use A/D input or current velocity direction
+	var input_dir = 0.0
+	if Input.is_action_pressed("steer_left"):
+		input_dir = -1.0
+	elif Input.is_action_pressed("steer_right"):
+		input_dir = 1.0
+	
 	if abs(input_dir) > 0.1:
 		dash_direction = input_dir
 	else:
@@ -387,14 +386,22 @@ func _check_grounded() -> Dictionary:
 	return result
 
 func _handle_movement(delta):
-	if is_grounded and not is_on_rail and not is_dashing:
-		move_input = Input.get_axis("move_left", "move_right")
-	elif is_dashing:
-		move_input = 0.0
-
-	var target_speed = rail_move_speed if is_on_rail else move_speed
+	# Get input from WASD keys
+	var accelerate_input = Input.is_action_pressed("accelerate")  # W key
+	var brake_input = Input.is_action_pressed("brake")  # S key
+	var left_input = Input.is_action_pressed("steer_left")  # A key
+	var right_input = Input.is_action_pressed("steer_right")  # D key
+	
+	# Calculate desired direction from A/D input
+	var direction_input = 0.0
+	if right_input:
+		direction_input += 1.0
+	if left_input:
+		direction_input -= 1.0
+	
 	var current_velocity = linear_velocity
 	
+	# Special handling for rail movement (keep original rail behavior)
 	if is_on_rail:
 		var current_direction = sign(current_velocity.x) if abs(current_velocity.x) > 0.1 else 1.0
 		var target_velocity_x = current_direction * rail_move_speed
@@ -402,16 +409,62 @@ func _handle_movement(delta):
 		if abs(current_velocity.x) < rail_move_speed * 0.9:
 			var force_needed = (target_velocity_x - current_velocity.x) * mass * 10.0
 			apply_central_force(Vector3(force_needed, 0, 0))
+		return
+	
+	# Skip movement handling if dashing (let dash control movement)
+	if is_dashing:
+		return
+	
+	# Determine control multiplier based on ground state
+	var control_multiplier = 1.0
+	if not is_grounded:
+		control_multiplier = air_control_multiplier
+	
+	# Handle acceleration/deceleration based on input
+	var target_velocity_x = current_velocity.x
+	var force_to_apply = 0.0
+	
+	if accelerate_input and abs(direction_input) > 0.1:
+		# Accelerate in the direction of A/D input
+		target_velocity_x = direction_input * max_speed
+		var velocity_diff = target_velocity_x - current_velocity.x
+		force_to_apply = sign(velocity_diff) * acceleration_force * control_multiplier
+		
+		# Limit force if we're close to target velocity
+		if abs(velocity_diff) < abs(force_to_apply * delta / mass):
+			force_to_apply = velocity_diff * mass / delta
+	
+	elif brake_input:
+		# Active deceleration (S key) - brake harder
+		force_to_apply = -sign(current_velocity.x) * deceleration_force * 1.5 * control_multiplier
+		
+		# Stop if we're going slow enough
+		if abs(current_velocity.x) < 1.0:
+			force_to_apply = -current_velocity.x * mass / delta
+	
+	elif abs(direction_input) > 0.1:
+		# Just directional input without acceleration - gentle steering
+		target_velocity_x = direction_input * max_speed * 0.7  # Reduced speed for steering without W
+		var velocity_diff = target_velocity_x - current_velocity.x
+		force_to_apply = sign(velocity_diff) * acceleration_force * 0.5 * control_multiplier
+		
+		# Limit force if we're close to target velocity
+		if abs(velocity_diff) < abs(force_to_apply * delta / mass):
+			force_to_apply = velocity_diff * mass / delta
+	
 	else:
-		var target_velocity = Vector3(move_input * target_speed, linear_velocity.y, 0)
-		var velocity_diff = target_velocity.x - current_velocity.x
-		var accel = acceleration if abs(move_input) > 0.1 else (friction if is_grounded else air_friction)
-		
-		if is_dashing:
-			accel *= 0.2
-		
-		var force = velocity_diff * accel * mass
-		apply_central_force(Vector3(force, 0, 0))
+		# No input - natural deceleration (momentum)
+		if abs(current_velocity.x) > 0.1:
+			var natural_decel = deceleration_force * 0.3 * control_multiplier  # Gentle natural slowdown
+			force_to_apply = -sign(current_velocity.x) * natural_decel
+			
+			# Stop if we're going very slow
+			if abs(current_velocity.x) < 0.5:
+				force_to_apply = -current_velocity.x * mass / delta
+	
+	# Apply the calculated force
+	if abs(force_to_apply) > 0.01:
+		apply_central_force(Vector3(force_to_apply * mass, 0, 0))
 
 func _on_timer_timeout() -> void:
 	ground_check.enabled = true

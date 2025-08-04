@@ -1,7 +1,7 @@
 [gd_scene load_steps=20 format=3 uid="uid://b1k1opcerncst"]
 
 [ext_resource type="PackedScene" uid="uid://bkb0bgwpuuc4n" path="res://scenes/camera_controller.tscn" id="1_1lwx6"]
-[ext_resource type="Shader" uid="uid://p071tuygxbtu" path="res://scenes/test_world.gdshader" id="1_dvny0"]
+[ext_resource type="Shader" path="res://scenes/test_world.gdshader" id="1_dvny0"]
 [ext_resource type="Script" uid="uid://eseww4i03svg" path="res://scenes/test_world.gd" id="2_7448y"]
 [ext_resource type="PackedScene" uid="uid://bmr1d5gach4ip" path="res://scenes/player.tscn" id="2_dsnr4"]
 [ext_resource type="PackedScene" uid="uid://bjeyih3voierq" path="res://scenes/rails.tscn" id="3_lf0gk"]
@@ -92,6 +92,7 @@ physics_material_override = SubResource("PhysicsMaterial_1lwx6")
 transform = Transform3D(0.999815, -0.0192672, 0, 0.0192672, 0.999815, 0, 0, 0, 1, 16.0222, -3.26965, 0.0943441)
 
 [node name="StaticBody3D2" type="StaticBody3D" parent="SubViewport/TestWorld"]
+transform = Transform3D(11.3054, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="SubViewport/TestWorld/StaticBody3D2"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.19359, -5.04443, 0)

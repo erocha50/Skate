@@ -19,6 +19,8 @@ physics_material_override = SubResource("PhysicsMaterial_4flbx")
 continuous_cd = true
 contact_monitor = true
 script = ExtResource("1_dqkch")
+max_speed = 30.0
+acceleration_force = 50.0
 
 [node name="PlayerCollision" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, -3.55271e-15, 0, 1, 0, 3.55271e-15, 0, 1, 0, 0.736317, 0)

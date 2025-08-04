@@ -16,7 +16,7 @@ var scroll_sensitivity = 0.01
 var target_position = Vector3.ZERO
 var scroll_speed = 5.0
 
-# Fixed music data - each disc gets one specific track
+# Expanded music data - now with 5 tracks
 var music_tracks = [
 	{
 		"title": "Neon Dreams",
@@ -35,10 +35,22 @@ var music_tracks = [
 		"artist": "Future Beats",
 		"audio_path": "res://audio/track3.ogg",
 		"album_art": "res://textures/album3.png"
+	},
+	{
+		"title": "Cosmic Wave",
+		"artist": "Stellar Sounds",
+		"audio_path": "res://audio/track4.ogg",
+		"album_art": "res://textures/album4.png"
+	},
+	{
+		"title": "Quantum Beats",
+		"artist": "Digital Dreams",
+		"audio_path": "res://audio/track5.ogg",
+		"album_art": "res://textures/album5.png"
 	}
 ]
 
-var disc_nodes = []  # Array to hold our 3 disc nodes
+var disc_nodes = []  # Array to hold our 5 disc nodes
 
 func _ready():
 	setup_discs()
@@ -52,25 +64,26 @@ func setup_discs():
 	# Let the disc container handle positioning
 	disc_container.setup_disc_positions()
 	
-	# Get all disc nodes from the container
+	# Clear and get all disc nodes from the container
+	disc_nodes.clear()
 	for i in range(disc_container.get_child_count()):
 		var disc = disc_container.get_child(i)
 		if disc.name.begins_with("MusicDisc"):
 			disc_nodes.append(disc)
 	
-	# Ensure we have exactly 3 discs
-	if disc_nodes.size() != 3:
-		print("Warning: Expected 3 discs, found ", disc_nodes.size())
+	# Ensure we have exactly 5 discs
+	if disc_nodes.size() != 5:
+		print("Warning: Expected 5 discs, found ", disc_nodes.size())
 		return
 	
 	# Setup each disc with its specific track
 	for i in range(disc_nodes.size()):
 		var disc = disc_nodes[i]
 		
-		# Each disc gets its own specific track (no rotation/changing)
+		# Each disc gets its own specific track
 		if disc.has_method("setup_disc"):
 			disc.setup_disc(music_tracks[i], i)
-			# Connect signals
+			# Connect signals if not already connected
 			if not disc.disc_selected.is_connected(_on_disc_selected):
 				disc.disc_selected.connect(_on_disc_selected)
 			if not disc.disc_hovered.is_connected(_on_disc_hovered):
@@ -78,8 +91,8 @@ func setup_discs():
 		else:
 			setup_disc_fallback(disc, music_tracks[i], i)
 	
-	# Start with middle disc selected
-	current_disc_index = 1
+	# Start with middle disc selected (index 2 for 5 discs)
+	current_disc_index = 2
 	disc_container.center_disc(current_disc_index)
 	update_disc_selection()
 
@@ -123,7 +136,7 @@ func handle_drag(mouse_pos: Vector2):
 func navigate_disc(direction: int):
 	var new_index = current_disc_index + direction
 	
-	# Clamp to valid range (0-2 for 3 discs)
+	# Clamp to valid range (0-4 for 5 discs)
 	new_index = clamp(new_index, 0, disc_nodes.size() - 1)
 	
 	if new_index != current_disc_index:

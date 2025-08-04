@@ -23,12 +23,20 @@ var current_letter: String = ""
 var input_timer: float = 0.0
 var original_time_scale: float = 1.0
 
-# Input mapping
+# Input mapping - Updated to match movement system actions
 var input_map: Dictionary = {
-	"w": "move_up",
-	"a": "move_left", 
-	"s": "move_down",
-	"d": "move_right"
+	"w": "accelerate",
+	"a": "steer_left", 
+	"s": "brake",
+	"d": "steer_right"
+}
+
+# Fallback input mapping for ui_* actions
+var fallback_input_map: Dictionary = {
+	"w": "ui_up",
+	"a": "ui_left", 
+	"s": "ui_down",
+	"d": "ui_right"
 }
 
 # Colors for visual feedback
@@ -242,17 +250,27 @@ func _update_letter_color():
 
 func _handle_input():
 	var input_action = input_map.get(current_letter, "")
+	var fallback_action = fallback_input_map.get(current_letter, "")
 	
-	# Check if the correct input is pressed
+	# Check if the correct input is pressed (try both custom and fallback actions)
+	var correct_input_pressed = false
 	if input_action != "" and Input.is_action_just_pressed(input_action):
+		correct_input_pressed = true
+	elif fallback_action != "" and Input.is_action_just_pressed(fallback_action):
+		correct_input_pressed = true
+	
+	if correct_input_pressed:
 		_handle_correct_input()
 		return
 	
-	# Check for wrong input
+	# Check for wrong input (check both custom and fallback actions)
 	for letter in input_map.keys():
 		if letter != current_letter:
 			var wrong_action = input_map[letter]
-			if Input.is_action_just_pressed(wrong_action):
+			var wrong_fallback = fallback_input_map[letter]
+			
+			if (wrong_action != "" and Input.is_action_just_pressed(wrong_action)) or \
+			   (wrong_fallback != "" and Input.is_action_just_pressed(wrong_fallback)):
 				_handle_wrong_input()
 				return
 
@@ -355,7 +373,7 @@ func show_qte():
 	# Make sure we're on top of everything
 	move_to_front()
 	
-	print("QTE System: Showing QTE UI - visible: ", visible, ", modulate: ", modulate)
+	print("QTE System: Showing QTE UI - visible: ", visible, ", big booty latinas: ", modulate)
 
 func hide_qte():
 	
