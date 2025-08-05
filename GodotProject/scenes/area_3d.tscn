@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://r4ee5vjxchuv"]
+
+[ext_resource type="Script" uid="uid://bw7yhdrpcsvgp" path="res://area_3d.gd" id="1_nhnym"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_cemll"]
+
+[node name="TextBubbleTrigger" type="Area3D"]
+script = ExtResource("1_nhnym")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(15.6638, 0, 0, 0, 2.81768, 0, 0, 0, 1, 0, 0, 0)
+shape = SubResource("BoxShape3D_cemll")
+
+[node name="BoxShape3D" type="CSGBox3D" parent="CollisionShape3D"]
+transform = Transform3D(1, 0, 0, 0, 0.0226594, 0, 0, 0, 0.0369216, 0, 0, 0)

@@ -1,13 +1,15 @@
-[gd_scene load_steps=20 format=3 uid="uid://b1k1opcerncst"]
+[gd_scene load_steps=23 format=3 uid="uid://b1k1opcerncst"]
 
 [ext_resource type="PackedScene" uid="uid://bkb0bgwpuuc4n" path="res://scenes/camera_controller.tscn" id="1_1lwx6"]
-[ext_resource type="Shader" path="res://scenes/test_world.gdshader" id="1_dvny0"]
+[ext_resource type="Shader" uid="uid://p071tuygxbtu" path="res://scenes/test_world.gdshader" id="1_dvny0"]
 [ext_resource type="Script" uid="uid://eseww4i03svg" path="res://scenes/test_world.gd" id="2_7448y"]
 [ext_resource type="PackedScene" uid="uid://bmr1d5gach4ip" path="res://scenes/player.tscn" id="2_dsnr4"]
 [ext_resource type="PackedScene" uid="uid://bjeyih3voierq" path="res://scenes/rails.tscn" id="3_lf0gk"]
 [ext_resource type="Texture2D" uid="uid://b8thbqivcxa65" path="res://Metro_PSX/Metro_PSX/Textures/Floor.png" id="4_ynswa"]
+[ext_resource type="PackedScene" uid="uid://r4ee5vjxchuv" path="res://scenes/area_3d.tscn" id="7_7448y"]
 [ext_resource type="PackedScene" uid="uid://vhe1h3wglknj" path="res://scenes/freezeblocks.tscn" id="7_xwrkq"]
 [ext_resource type="PackedScene" uid="uid://cfaqvg4g1tf74" path="res://scenes/score_ui.tscn" id="8_nrstc"]
+[ext_resource type="Shader" uid="uid://cmqxs1gqjwul1" path="res://editlater.gdshader" id="10_ar7ra"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_xwrkq"]
 shader = ExtResource("1_dvny0")
@@ -52,6 +54,17 @@ size = Vector3(39.815, 0.5, 0.5)
 [sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_7448y"]
 data = PackedVector3Array(-19.9075, 0.25, -0.25, -19.9075, -0.25, -0.25, 19.9075, -0.25, -0.25, -19.9075, 0.25, 0.25, -19.9075, -0.25, 0.25, -19.9075, -0.25, -0.25, -19.9075, -0.25, 0.25, 19.9075, -0.25, 0.25, -19.9075, -0.25, -0.25, -19.9075, 0.25, -0.25, -19.9075, 0.25, 0.25, -19.9075, -0.25, -0.25, -19.9075, 0.25, 0.25, -19.9075, 0.25, -0.25, 19.9075, 0.25, -0.25, -19.9075, 0.25, 0.25, 19.9075, 0.25, 0.25, -19.9075, -0.25, 0.25, 19.9075, -0.25, 0.25, 19.9075, -0.25, -0.25, -19.9075, -0.25, -0.25, 19.9075, 0.25, -0.25, 19.9075, -0.25, -0.25, 19.9075, -0.25, 0.25, 19.9075, 0.25, 0.25, 19.9075, -0.25, 0.25, -19.9075, -0.25, 0.25, 19.9075, 0.25, -0.25, -19.9075, 0.25, -0.25, 19.9075, -0.25, -0.25, 19.9075, 0.25, 0.25, -19.9075, 0.25, 0.25, 19.9075, 0.25, -0.25, 19.9075, 0.25, 0.25, 19.9075, 0.25, -0.25, 19.9075, -0.25, 0.25)
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ixgyf"]
+shader = ExtResource("10_ar7ra")
+shader_parameter/scanline_color = Color(0, 0, 0, 1)
+shader_parameter/flicker_color = Color(0, 0, 0, 1)
+shader_parameter/scanlines_count = 10.0
+shader_parameter/scanlines_intensity = 0.05
+shader_parameter/flicker_speed = 0.5
+shader_parameter/flicker_intensity = 0.025
+shader_parameter/color_offset = 0.0
+shader_parameter/blur = 0.15
+
 [node name="SubViewportContainer" type="SubViewportContainer"]
 material = SubResource("ShaderMaterial_xwrkq")
 anchors_preset = 15
@@ -84,7 +97,7 @@ camera_distance_y = 0.0
 camera_distance_z = 10.0
 
 [node name="Player" parent="SubViewport/TestWorld" instance=ExtResource("2_dsnr4")]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -9.31006, 0, 0)
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -153.488, -3.25032, 0)
 mass = 2.0
 physics_material_override = SubResource("PhysicsMaterial_1lwx6")
 
@@ -113,6 +126,9 @@ mesh = SubResource("BoxMesh_dvny0")
 [node name="CSGBakedCollisionShape3D" type="CollisionShape3D" parent="SubViewport/TestWorld/StaticBody3D3"]
 shape = SubResource("ConcavePolygonShape3D_7448y")
 
+[node name="TextTrigger" parent="SubViewport" instance=ExtResource("7_7448y")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -137.011, -3.01039, 0)
+
 [node name="Freezeblocks" parent="." instance=ExtResource("7_xwrkq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.2767, -0.960316, 0.39393)
 
@@ -132,5 +148,14 @@ shape = SubResource("ConcavePolygonShape3D_7448y")
 
 [node name="StaticBody3D" parent="." instance=ExtResource("3_lf0gk")]
 transform = Transform3D(0.856646, -0.515905, 0, 0.515905, 0.856646, 0, 0, 0, 1, 68.2101, 8.12791, 0.230364)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer"]
+material = SubResource("ShaderMaterial_ixgyf")
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 1151.0
+offset_bottom = 651.0
 
 [editable path="SubViewport/TestWorld/Player"]
