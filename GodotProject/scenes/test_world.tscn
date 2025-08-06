@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://b1k1opcerncst"]
+[gd_scene load_steps=24 format=3 uid="uid://b1k1opcerncst"]
 
 [ext_resource type="PackedScene" uid="uid://bkb0bgwpuuc4n" path="res://scenes/camera_controller.tscn" id="1_1lwx6"]
 [ext_resource type="Shader" uid="uid://p071tuygxbtu" path="res://scenes/test_world.gdshader" id="1_dvny0"]
@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://r4ee5vjxchuv" path="res://scenes/area_3d.tscn" id="7_7448y"]
 [ext_resource type="PackedScene" uid="uid://vhe1h3wglknj" path="res://scenes/freezeblocks.tscn" id="7_xwrkq"]
 [ext_resource type="PackedScene" uid="uid://cfaqvg4g1tf74" path="res://scenes/score_ui.tscn" id="8_nrstc"]
+[ext_resource type="PackedScene" uid="uid://ct2ugxt4bnw0f" path="res://scenes/platform.tscn" id="9_mjm4b"]
 [ext_resource type="Shader" uid="uid://cmqxs1gqjwul1" path="res://editlater.gdshader" id="10_ar7ra"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_xwrkq"]
@@ -128,6 +129,9 @@ shape = SubResource("ConcavePolygonShape3D_7448y")
 
 [node name="TextTrigger" parent="SubViewport" instance=ExtResource("7_7448y")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -137.011, -3.01039, 0)
+
+[node name="Platform" parent="SubViewport" instance=ExtResource("9_mjm4b")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -116.782, -4.38349, 0)
 
 [node name="Freezeblocks" parent="." instance=ExtResource("7_xwrkq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.2767, -0.960316, 0.39393)

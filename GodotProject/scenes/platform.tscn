@@ -1,0 +1,26 @@
+[gd_scene load_steps=5 format=3 uid="uid://ct2ugxt4bnw0f"]
+
+[ext_resource type="Script" uid="uid://djka2s6cx5qeg" path="res://rigid_body_3d.gd" id="1_ba0x2"]
+[ext_resource type="PackedScene" uid="uid://kijk2sngvc0y" path="res://scenes/barrel.tscn" id="2_nlgqw"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_nlgqw"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_nlgqw"]
+size = Vector3(2.77106, 0.098053, 2.58276)
+
+[node name="Platform" type="RigidBody3D"]
+continuous_cd = true
+contact_monitor = true
+max_contacts_reported = 2
+script = ExtResource("1_ba0x2")
+barrel_scene = ExtResource("2_nlgqw")
+
+[node name="CSGMesh3D" type="CSGMesh3D" parent="."]
+transform = Transform3D(2.95641, 0, 0, 0, 0.110419, 0, 0, 0, 2.61881, 0, 0, 0)
+mesh = SubResource("BoxMesh_nlgqw")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0520935, -0.00495911, 0.0733643)
+shape = SubResource("BoxShape3D_nlgqw")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

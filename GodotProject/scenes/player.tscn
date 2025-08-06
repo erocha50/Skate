@@ -13,11 +13,12 @@ friction = 0.0
 [sub_resource type="BoxShape3D" id="BoxShape3D_qhqgy"]
 
 [node name="Player" type="RigidBody3D" groups=["player"]]
-transform = Transform3D(-5.24537e-08, 0, 1.2, 0, 1.2, 0, -1.2, 0, -5.24537e-08, 0, 0, 0)
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
 collision_mask = 3
 physics_material_override = SubResource("PhysicsMaterial_4flbx")
 continuous_cd = true
 contact_monitor = true
+max_contacts_reported = 2
 script = ExtResource("1_dqkch")
 max_speed = 30.0
 acceleration_force = 50.0

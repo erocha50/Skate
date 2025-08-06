@@ -1,0 +1,20 @@
+[gd_scene load_steps=4 format=3 uid="uid://kijk2sngvc0y"]
+
+[ext_resource type="Script" uid="uid://dis7dar78ki0i" path="res://scenes/barrel.gd" id="1_q36op"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_gvosk"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_q36op"]
+
+[node name="Barrel" type="RigidBody3D" groups=["barrel"]]
+script = ExtResource("1_q36op")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.25131, 0, 0, 0, 0.936551, 0, 0, 0, 1.25131, 0, 0, 0)
+mesh = SubResource("CylinderMesh_gvosk")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1.25066, 0, 0, 0, 0.931974, 0, 0, 0, 1.25066, 0, 0, 0)
+shape = SubResource("CylinderShape3D_q36op")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
