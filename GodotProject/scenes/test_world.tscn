@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://b1k1opcerncst"]
+[gd_scene load_steps=23 format=3 uid="uid://b1k1opcerncst"]
 
 [ext_resource type="PackedScene" uid="uid://bkb0bgwpuuc4n" path="res://scenes/camera_controller.tscn" id="1_1lwx6"]
 [ext_resource type="Shader" uid="uid://p071tuygxbtu" path="res://scenes/test_world.gdshader" id="1_dvny0"]
@@ -6,7 +6,6 @@
 [ext_resource type="PackedScene" uid="uid://bmr1d5gach4ip" path="res://scenes/player.tscn" id="2_dsnr4"]
 [ext_resource type="PackedScene" uid="uid://bjeyih3voierq" path="res://scenes/rails.tscn" id="3_lf0gk"]
 [ext_resource type="Texture2D" uid="uid://b8thbqivcxa65" path="res://Metro_PSX/Metro_PSX/Textures/Floor.png" id="4_ynswa"]
-[ext_resource type="PackedScene" uid="uid://r4ee5vjxchuv" path="res://scenes/area_3d.tscn" id="7_7448y"]
 [ext_resource type="PackedScene" uid="uid://vhe1h3wglknj" path="res://scenes/freezeblocks.tscn" id="7_xwrkq"]
 [ext_resource type="PackedScene" uid="uid://cfaqvg4g1tf74" path="res://scenes/score_ui.tscn" id="8_nrstc"]
 [ext_resource type="PackedScene" uid="uid://ct2ugxt4bnw0f" path="res://scenes/platform.tscn" id="9_mjm4b"]
@@ -105,15 +104,15 @@ physics_material_override = SubResource("PhysicsMaterial_1lwx6")
 [node name="StaticBody3D" parent="SubViewport/TestWorld" instance=ExtResource("3_lf0gk")]
 transform = Transform3D(0.999815, -0.0192672, 0, 0.0192672, 0.999815, 0, 0, 0, 1, 16.0222, -3.26965, 0.0943441)
 
-[node name="StaticBody3D2" type="StaticBody3D" parent="SubViewport/TestWorld"]
-transform = Transform3D(11.3054, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+[node name="WorldPlatform2" type="StaticBody3D" parent="SubViewport/TestWorld"]
+transform = Transform3D(0.704869, 0, 0, 0, 1, 0, 0, 0, 1, -180.261, 0, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="SubViewport/TestWorld/StaticBody3D2"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="SubViewport/TestWorld/WorldPlatform2"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.19359, -5.04443, 0)
 mesh = SubResource("BoxMesh_cnaw2")
 surface_material_override/0 = SubResource("StandardMaterial3D_dvny0")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="SubViewport/TestWorld/StaticBody3D2"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SubViewport/TestWorld/WorldPlatform2"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.19359, -5.04443, 0)
 shape = SubResource("ConcavePolygonShape3D_nrstc")
 
@@ -127,31 +126,40 @@ mesh = SubResource("BoxMesh_dvny0")
 [node name="CSGBakedCollisionShape3D" type="CollisionShape3D" parent="SubViewport/TestWorld/StaticBody3D3"]
 shape = SubResource("ConcavePolygonShape3D_7448y")
 
-[node name="TextTrigger" parent="SubViewport" instance=ExtResource("7_7448y")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -137.011, -3.01039, 0)
+[node name="WorldPlatform" type="StaticBody3D" parent="SubViewport/TestWorld"]
+transform = Transform3D(1.2405, 0, 0, 0, 1, 0, 0, 0, 1, 13.0594, 0.135262, 0)
 
-[node name="Platform" parent="SubViewport" instance=ExtResource("9_mjm4b")]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="SubViewport/TestWorld/WorldPlatform"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.19359, -5.04443, 0)
+mesh = SubResource("BoxMesh_cnaw2")
+surface_material_override/0 = SubResource("StandardMaterial3D_dvny0")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SubViewport/TestWorld/WorldPlatform"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.19359, -5.04443, 0)
+shape = SubResource("ConcavePolygonShape3D_nrstc")
+
+[node name="StaticBody3D4" type="StaticBody3D" parent="SubViewport/TestWorld" groups=["Rail", "rails"]]
+transform = Transform3D(1, 0, 0, 0, 1, -1.74846e-07, 0, 1.74846e-07, 1, 109.384, 19.6101, -0.0194814)
+physics_material_override = SubResource("PhysicsMaterial_nrstc")
+
+[node name="CSGMesh3D" type="CSGMesh3D" parent="SubViewport/TestWorld/StaticBody3D4"]
+mesh = SubResource("BoxMesh_dvny0")
+
+[node name="CSGBakedCollisionShape3D" type="CollisionShape3D" parent="SubViewport/TestWorld/StaticBody3D4"]
+shape = SubResource("ConcavePolygonShape3D_7448y")
+
+[node name="StaticBody3D2" parent="SubViewport/TestWorld" instance=ExtResource("3_lf0gk")]
+transform = Transform3D(0.856646, -0.515905, 0, 0.515905, 0.856646, 0, 0, 0, 1, 68.2101, 8.12791, 0.230364)
+
+[node name="Platform" parent="SubViewport/TestWorld" instance=ExtResource("9_mjm4b")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -116.782, -4.38349, 0)
 
-[node name="Freezeblocks" parent="." instance=ExtResource("7_xwrkq")]
+[node name="Freezeblocks" parent="SubViewport/TestWorld" instance=ExtResource("7_xwrkq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.2767, -0.960316, 0.39393)
 
 [node name="ScoreUI" parent="." node_paths=PackedStringArray("player") instance=ExtResource("8_nrstc")]
 layout_mode = 2
 player = NodePath("../SubViewport/TestWorld/Player")
-
-[node name="StaticBody3D3" type="StaticBody3D" parent="." groups=["Rail", "rails"]]
-transform = Transform3D(1, 0, 0, 0, 1, -1.74846e-07, 0, 1.74846e-07, 1, 109.384, 19.6101, -0.0194814)
-physics_material_override = SubResource("PhysicsMaterial_nrstc")
-
-[node name="CSGMesh3D" type="CSGMesh3D" parent="StaticBody3D3"]
-mesh = SubResource("BoxMesh_dvny0")
-
-[node name="CSGBakedCollisionShape3D" type="CollisionShape3D" parent="StaticBody3D3"]
-shape = SubResource("ConcavePolygonShape3D_7448y")
-
-[node name="StaticBody3D" parent="." instance=ExtResource("3_lf0gk")]
-transform = Transform3D(0.856646, -0.515905, 0, 0.515905, 0.856646, 0, 0, 0, 1, 68.2101, 8.12791, 0.230364)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 

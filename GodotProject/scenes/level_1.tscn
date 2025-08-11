@@ -1,0 +1,96 @@
+[gd_scene load_steps=14 format=3 uid="uid://cd80gapptdlao"]
+
+[ext_resource type="Shader" uid="uid://p071tuygxbtu" path="res://scenes/test_world.gdshader" id="1_fcfvj"]
+[ext_resource type="Script" uid="uid://eseww4i03svg" path="res://scenes/test_world.gd" id="2_pa8r4"]
+[ext_resource type="PackedScene" uid="uid://bkb0bgwpuuc4n" path="res://scenes/camera_controller.tscn" id="3_15mv3"]
+[ext_resource type="PackedScene" uid="uid://bmr1d5gach4ip" path="res://scenes/player.tscn" id="4_e3sih"]
+[ext_resource type="PackedScene" uid="uid://cfaqvg4g1tf74" path="res://scenes/score_ui.tscn" id="5_2y5yt"]
+[ext_resource type="PackedScene" uid="uid://capiiyk6plkkr" path="res://Metro_PSX/Metro_PSX/Models/Metro.fbx" id="5_pa8r4"]
+[ext_resource type="Shader" uid="uid://cmqxs1gqjwul1" path="res://editlater.gdshader" id="6_2os1m"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_xwrkq"]
+shader = ExtResource("1_fcfvj")
+shader_parameter/enabled = true
+shader_parameter/dithering = true
+shader_parameter/colors = 12
+shader_parameter/dither_size = 1
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1lwx6"]
+sky_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
+ground_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
+
+[sub_resource type="Sky" id="Sky_dsnr4"]
+sky_material = SubResource("ProceduralSkyMaterial_1lwx6")
+
+[sub_resource type="Environment" id="Environment_lf0gk"]
+background_mode = 2
+sky = SubResource("Sky_dsnr4")
+tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_1lwx6"]
+friction = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ixgyf"]
+shader = ExtResource("6_2os1m")
+shader_parameter/scanline_color = Color(0, 0, 0, 1)
+shader_parameter/flicker_color = Color(0, 0, 0, 1)
+shader_parameter/scanlines_count = 10.0
+shader_parameter/scanlines_intensity = 0.05
+shader_parameter/flicker_speed = 0.5
+shader_parameter/flicker_intensity = 0.025
+shader_parameter/color_offset = 0.0
+shader_parameter/blur = 0.15
+
+[node name="LEVEL 1" type="SubViewportContainer"]
+material = SubResource("ShaderMaterial_xwrkq")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SubViewport" type="SubViewport" parent="."]
+handle_input_locally = false
+size = Vector2i(1152, 648)
+render_target_update_mode = 4
+
+[node name="TestWorld" type="Node3D" parent="SubViewport"]
+script = ExtResource("2_pa8r4")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="SubViewport/TestWorld"]
+transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75, -0.433013, 0, 0, 0)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="SubViewport/TestWorld"]
+environment = SubResource("Environment_lf0gk")
+
+[node name="CameraController" parent="SubViewport/TestWorld" node_paths=PackedStringArray("target") instance=ExtResource("3_15mv3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.81589, -1.46062, 8.90183)
+target = NodePath("../Player")
+rotation_speed = -3.0
+camera_distance_x = 0.0
+camera_distance_y = 0.0
+camera_distance_z = 10.0
+
+[node name="Player" parent="SubViewport/TestWorld" instance=ExtResource("4_e3sih")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -153.488, -3.25032, 0)
+mass = 2.0
+physics_material_override = SubResource("PhysicsMaterial_1lwx6")
+
+[node name="Metro" parent="SubViewport/TestWorld" instance=ExtResource("5_pa8r4")]
+
+[node name="ScoreUI" parent="." node_paths=PackedStringArray("player") instance=ExtResource("5_2y5yt")]
+layout_mode = 2
+player = NodePath("../SubViewport/TestWorld/Player")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer"]
+material = SubResource("ShaderMaterial_ixgyf")
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 1151.0
+offset_bottom = 651.0
+
+[editable path="SubViewport/TestWorld/Player"]
