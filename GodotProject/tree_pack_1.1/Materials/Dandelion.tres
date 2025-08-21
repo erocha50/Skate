@@ -1,0 +1,10 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://bf76piwj4kw7u"]
+
+[ext_resource type="Texture2D" uid="uid://bxeib717u1u4f" path="res://tree_pack_1.1/PSX_Forest_AssetCollection_byStarkCrafts_0.png" id="1_n0y3x"]
+
+[resource]
+resource_name = "Dandelion"
+transparency = 4
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("1_n0y3x")
+emission_enabled = true

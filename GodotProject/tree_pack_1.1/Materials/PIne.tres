@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://b8u40rusrvyai"]
+
+[ext_resource type="Texture2D" uid="uid://bsbduwpr1nsej" path="res://tree_pack_1.1/PSX_Forest_AssetCollection_byStarkCrafts_3.png" id="1_q5gsn"]
+
+[resource]
+resource_name = "PIne"
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("1_q5gsn")
+emission_enabled = true

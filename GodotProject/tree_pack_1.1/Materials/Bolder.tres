@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://c1indistwfcm8"]
+
+[ext_resource type="Texture2D" uid="uid://do1wxn5qbo15a" path="res://tree_pack_1.1/PSX_Forest_AssetCollection_byStarkCrafts_2.png" id="1_unrpg"]
+
+[resource]
+resource_name = "Bolder"
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("1_unrpg")
+emission_enabled = true

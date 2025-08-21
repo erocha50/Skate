@@ -157,6 +157,33 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -116.782, -4.38349, 0)
 [node name="Freezeblocks" parent="SubViewport/TestWorld" instance=ExtResource("7_xwrkq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.2767, -0.960316, 0.39393)
 
+[node name="Platform2" parent="SubViewport/TestWorld" instance=ExtResource("9_mjm4b")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -112.813, -4.38349, 0)
+
+[node name="Platform3" parent="SubViewport/TestWorld" instance=ExtResource("9_mjm4b")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -108.5, -4.38349, 0)
+
+[node name="Platform4" parent="SubViewport/TestWorld" instance=ExtResource("9_mjm4b")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -104.531, -4.38349, 0)
+
+[node name="Platform5" parent="SubViewport/TestWorld" instance=ExtResource("9_mjm4b")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -100.213, -4.38349, 0)
+
+[node name="Platform6" parent="SubViewport/TestWorld" instance=ExtResource("9_mjm4b")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -96.2447, -4.38349, 0)
+
+[node name="Platform7" parent="SubViewport/TestWorld" instance=ExtResource("9_mjm4b")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -91.9313, -4.38349, 0)
+
+[node name="Platform8" parent="SubViewport/TestWorld" instance=ExtResource("9_mjm4b")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -87.9627, -4.38349, 0)
+
+[node name="Platform9" parent="SubViewport/TestWorld" instance=ExtResource("9_mjm4b")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -84.068, -4.38349, 0)
+
+[node name="Platform10" parent="SubViewport/TestWorld" instance=ExtResource("9_mjm4b")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -134.716, -1.74259, 0)
+
 [node name="ScoreUI" parent="." node_paths=PackedStringArray("player") instance=ExtResource("8_nrstc")]
 layout_mode = 2
 player = NodePath("../SubViewport/TestWorld/Player")

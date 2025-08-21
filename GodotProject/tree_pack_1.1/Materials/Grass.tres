@@ -1,0 +1,10 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://dj4yeygd41l1y"]
+
+[ext_resource type="Texture2D" uid="uid://0aptpa0ut7v1" path="res://tree_pack_1.1/PSX_Forest_AssetCollection_byStarkCrafts_1.png" id="1_altfe"]
+
+[resource]
+resource_name = "Grass"
+transparency = 4
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("1_altfe")
+emission_enabled = true

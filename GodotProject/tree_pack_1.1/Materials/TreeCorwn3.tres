@@ -1,0 +1,11 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://c3muluix2aq3f"]
+
+[ext_resource type="Texture2D" uid="uid://c3wj83c4ldu0g" path="res://tree_pack_1.1/PSX_Forest_AssetCollection_byStarkCrafts_8.png" id="1_vruey"]
+
+[resource]
+resource_name = "TreeCorwn3"
+transparency = 4
+cull_mode = 2
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("1_vruey")
+emission_enabled = true
