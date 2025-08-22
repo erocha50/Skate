@@ -1,0 +1,10 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://c3vcdjd1g54y0"]
+
+[ext_resource type="Shader" uid="uid://p071tuygxbtu" path="res://scenes/test_world.gdshader" id="1_lcikg"]
+
+[resource]
+shader = ExtResource("1_lcikg")
+shader_parameter/enabled = true
+shader_parameter/dithering = true
+shader_parameter/colors = 12
+shader_parameter/dither_size = 1

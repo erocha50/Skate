@@ -1,7 +1,7 @@
-[gd_scene load_steps=23 format=3 uid="uid://b1k1opcerncst"]
+[gd_scene load_steps=22 format=3 uid="uid://b1k1opcerncst"]
 
 [ext_resource type="PackedScene" uid="uid://bkb0bgwpuuc4n" path="res://scenes/camera_controller.tscn" id="1_1lwx6"]
-[ext_resource type="Shader" uid="uid://p071tuygxbtu" path="res://scenes/test_world.gdshader" id="1_dvny0"]
+[ext_resource type="Material" uid="uid://c3vcdjd1g54y0" path="res://scenes/WorldShader.tres" id="1_ar7ra"]
 [ext_resource type="Script" uid="uid://eseww4i03svg" path="res://scenes/test_world.gd" id="2_7448y"]
 [ext_resource type="PackedScene" uid="uid://bmr1d5gach4ip" path="res://scenes/player.tscn" id="2_dsnr4"]
 [ext_resource type="PackedScene" uid="uid://bjeyih3voierq" path="res://scenes/rails.tscn" id="3_lf0gk"]
@@ -11,23 +11,16 @@
 [ext_resource type="PackedScene" uid="uid://ct2ugxt4bnw0f" path="res://scenes/platform.tscn" id="9_mjm4b"]
 [ext_resource type="Shader" uid="uid://cmqxs1gqjwul1" path="res://editlater.gdshader" id="10_ar7ra"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_xwrkq"]
-shader = ExtResource("1_dvny0")
-shader_parameter/enabled = true
-shader_parameter/dithering = true
-shader_parameter/colors = 12
-shader_parameter/dither_size = 1
-
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1lwx6"]
 sky_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
 ground_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
 
-[sub_resource type="Sky" id="Sky_dsnr4"]
+[sub_resource type="Sky" id="Sky_ixgyf"]
 sky_material = SubResource("ProceduralSkyMaterial_1lwx6")
 
 [sub_resource type="Environment" id="Environment_lf0gk"]
 background_mode = 2
-sky = SubResource("Sky_dsnr4")
+sky = SubResource("Sky_ixgyf")
 tonemap_mode = 2
 glow_enabled = true
 
@@ -66,7 +59,7 @@ shader_parameter/color_offset = 0.0
 shader_parameter/blur = 0.15
 
 [node name="SubViewportContainer" type="SubViewportContainer"]
-material = SubResource("ShaderMaterial_xwrkq")
+material = ExtResource("1_ar7ra")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
