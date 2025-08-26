@@ -1,0 +1,38 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://cdu7a7p84tuj5"
+path.s3tc="res://.godot/imported/pine_tree_snow_pine_snow_lowres.png-04e7c75d198411c36e24b3f2d463ce57.s3tc.ctex"
+metadata={
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
+}
+generator_parameters={
+"md5": "30ba60fe62720eb06466702aa3113e40"
+}
+
+[deps]
+
+source_file="res://scenes/nature/exports/trees/pine_tree_snow_pine_snow_lowres.png"
+dest_files=["res://.godot/imported/pine_tree_snow_pine_snow_lowres.png-04e7c75d198411c36e24b3f2d463ce57.s3tc.ctex"]
+
+[params]
+
+compress/mode=2
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=0

@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://cjlxpwx372yfr"]
+[gd_scene load_steps=25 format=3 uid="uid://cjlxpwx372yfr"]
 
 [ext_resource type="Material" uid="uid://c3vcdjd1g54y0" path="res://scenes/WorldShader.tres" id="1_7qrjt"]
 [ext_resource type="PackedScene" uid="uid://cb6aerxcrbdkf" path="res://psx_tree_3.tscn" id="3_qvutf"]
@@ -8,8 +8,10 @@
 [ext_resource type="PackedScene" uid="uid://bkb0bgwpuuc4n" path="res://scenes/camera_controller.tscn" id="5_vke4u"]
 [ext_resource type="Texture2D" uid="uid://l3vlpftb2mwh" path="res://Metro_PSX/Metro_PSX/Models/Metro_metal_02.png" id="7_qvutf"]
 [ext_resource type="Script" uid="uid://b1wsjs20ruuk3" path="res://scenes/spot_light_3d.gd" id="7_vke4u"]
+[ext_resource type="PackedScene" uid="uid://cicnf2v8iev2x" path="res://exports/rocks/rock.glb" id="9_aaphv"]
 [ext_resource type="PackedScene" uid="uid://boi6s5r66rabr" path="res://Suspicious Car 01/Suspicious Car.blend" id="9_v4rjv"]
 [ext_resource type="PackedScene" uid="uid://bjeyih3voierq" path="res://scenes/rails.tscn" id="10_7kp6p"]
+[ext_resource type="PackedScene" uid="uid://c6qa3duo78fe6" path="res://exports/rocks/rock_grassy.glb" id="10_ett8r"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_7kp6p"]
 friction = 0.0
@@ -36,7 +38,9 @@ sky = SubResource("Sky_dsnr4")
 tonemap_mode = 2
 glow_enabled = true
 volumetric_fog_enabled = true
+volumetric_fog_density = 0.0606
 volumetric_fog_emission = Color(0.0646965, 0.0646965, 0.0646965, 1)
+volumetric_fog_emission_energy = 3.05
 volumetric_fog_gi_inject = 16.0
 volumetric_fog_anisotropy = 0.9
 
@@ -565,6 +569,7 @@ mass = 2.0
 physics_material_override = SubResource("PhysicsMaterial_7kp6p")
 
 [node name="Area3D" type="Area3D" parent="SubViewport"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.305103, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="SubViewport/Area3D"]
 transform = Transform3D(-5.41235e-06, 0, 274.926, 0, 1, 0, -123.82, 0, -1.20174e-05, 0, -4.9903, 0)
@@ -595,8 +600,58 @@ light_angular_distance = 4.55
 light_specular = 16.0
 shadow_enabled = true
 
+[node name="rock" type="Node3D" parent="SubViewport"]
+
+[node name="rock" parent="SubViewport/rock" instance=ExtResource("9_aaphv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -93.5271, -4.14275, -4.08652)
+
+[node name="rock_grassy" parent="SubViewport/rock" instance=ExtResource("10_ett8r")]
+transform = Transform3D(-0.317973, 0.937191, -0.14341, 0.85432, 0.348817, 0.38531, 0.411133, 0, -0.911576, -86.5721, -3.85491, -3.49453)
+
+[node name="rock_grassy2" parent="SubViewport/rock" instance=ExtResource("10_ett8r")]
+transform = Transform3D(0.323108, -0.946362, 0, 0.894959, 0.305558, 0.32509, -0.307652, -0.105039, 0.945683, -81.9081, -4.31659, -2.97947)
+
+[node name="rock_grassy3" parent="SubViewport/rock" instance=ExtResource("10_ett8r")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -80.2495, -4.5095, -6.05707)
+
+[node name="rock2" parent="SubViewport/rock" instance=ExtResource("9_aaphv")]
+transform = Transform3D(0.937513, 0, 0.34795, 0, 1, 0, -0.34795, 0, 0.937513, -84.7675, -4.45281, -5.56236)
+
+[node name="rock_grassy4" parent="SubViewport/rock" instance=ExtResource("10_ett8r")]
+transform = Transform3D(2.17719, 1.06292, -0.884557, -1.13155, 2.31776, 0, 0.794886, 0.38807, 2.4228, -74.166, -3.94498, -11.8084)
+
+[node name="rock_grassy5" parent="SubViewport/rock" instance=ExtResource("10_ett8r")]
+transform = Transform3D(6.50126, 0, 4.57883, 0, 7.95186, 0, -4.57883, 0, 6.50126, -63.9719, -4.29624, -15.2894)
+
+[node name="rock3" parent="SubViewport/rock" instance=ExtResource("9_aaphv")]
+transform = Transform3D(1.40762, 0, 1.64858, 0, 2.16776, 0, -1.64858, 0, 1.40762, -69.3259, -4.46003, -5.44294)
+
+[node name="rock4" parent="SubViewport/rock" instance=ExtResource("9_aaphv")]
+transform = Transform3D(-0.761459, 0, 0.648213, 0, 1, 0, -0.648213, 0, -0.761459, -10.0716, -4.14275, -6.84808)
+
+[node name="rock_grassy6" parent="SubViewport/rock" instance=ExtResource("10_ett8r")]
+transform = Transform3D(0.508625, -0.713632, -0.481694, 0.85432, 0.348817, 0.38531, -0.106946, -0.607499, 0.787088, -14.9838, -3.85491, -11.8072)
+
+[node name="rock_grassy7" parent="SubViewport/rock" instance=ExtResource("10_ett8r")]
+transform = Transform3D(0.0383077, -0.778595, 0.626357, 0.894959, 0.305558, 0.32509, -0.444501, 0.54811, 0.708515, -17.5701, -3.74193, -5.03299)
+
+[node name="rock_grassy8" parent="SubViewport/rock" instance=ExtResource("10_ett8r")]
+transform = Transform3D(0.74921, 0, 0.662333, 0, 1, 0, -0.662333, 0, 0.74921, -18.3659, -3.93484, -8.4373)
+
+[node name="rock5" parent="SubViewport/rock" instance=ExtResource("9_aaphv")]
+transform = Transform3D(0.471935, 0, 0.881633, 0, 1, 0, -0.881633, 0, 0.471935, -21.4231, -3.87815, -5.07425)
+
+[node name="rock_grassy9" parent="SubViewport/rock" instance=ExtResource("10_ett8r")]
+transform = Transform3D(-1.14259, -0.557819, 2.24404, -1.13155, 2.31776, -3.61025e-08, -2.01655, -0.984498, -1.27148, -29.8198, -3.94498, -13.5183)
+
+[node name="rock_grassy10" parent="SubViewport/rock" instance=ExtResource("10_ett8r")]
+transform = Transform3D(0.0627409, 4.53732, -6.52999, 7.83604, -1.1446, -0.72003, -1.35079, -6.4292, -4.48026, -45.8989, -4.29624, -17.4756)
+
+[node name="rock6" parent="SubViewport/rock" instance=ExtResource("9_aaphv")]
+transform = Transform3D(-2.14047, 0, -0.342887, 0, 2.16776, 0, 0.342887, 0, -2.14047, -29.3791, -4.46003, -21.5028)
+
 [node name="Suspicious Car" parent="." groups=["Rail", "rails"] instance=ExtResource("9_v4rjv")]
-transform = Transform3D(1.71726e-07, 0.865632, -2.01967, -1.76565e-07, -2.01967, -0.865632, -2.19736, 2.29937e-07, -8.82827e-08, -90.3024, -2.54226, -0.360008)
+transform = Transform3D(1.71726e-07, 0.865632, -2.01967, -1.76565e-07, -2.01967, -0.865632, -2.19736, 2.29937e-07, -8.82827e-08, -90.3024, -2.10163, -0.360008)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Suspicious Car" groups=["Rail", "rails"]]
 transform = Transform3D(1, -1.249e-16, 2.13163e-13, 2.13163e-14, 0.00111154, -1.19209e-06, -3.55271e-15, 5.82077e-10, 3.54718, 0.00799382, 0.16835, 0.506844)
@@ -619,6 +674,9 @@ mesh = SubResource("BoxMesh_aaphv")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Suspicious Car/MeshInstance3D2/StaticBody3D"]
 shape = SubResource("ConcavePolygonShape3D_ett8r")
+
+[node name="rock" parent="Suspicious Car" instance=ExtResource("9_aaphv")]
+transform = Transform3D(0.384465, -1.13145, -0.38022, 0.443815, 0.506324, -1.05793, 1.10805, 0.189783, 0.555669, 2.7711, 5.62444, -12.4013)
 
 [node name="StaticBody3D" parent="." instance=ExtResource("10_7kp6p")]
 transform = Transform3D(0.999815, -0.0192672, 0, 0.0192672, 0.999815, 0, 0, 0, 1, 19.1376, -3.26965, 71.4898)
