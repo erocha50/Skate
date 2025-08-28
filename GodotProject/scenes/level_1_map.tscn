@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3 uid="uid://cjlxpwx372yfr"]
+[gd_scene load_steps=31 format=3 uid="uid://cjlxpwx372yfr"]
 
 [ext_resource type="Material" uid="uid://c3vcdjd1g54y0" path="res://scenes/WorldShader.tres" id="1_7qrjt"]
 [ext_resource type="PackedScene" uid="uid://cb6aerxcrbdkf" path="res://psx_tree_3.tscn" id="3_qvutf"]
@@ -12,6 +12,11 @@
 [ext_resource type="PackedScene" uid="uid://boi6s5r66rabr" path="res://Suspicious Car 01/Suspicious Car.blend" id="9_v4rjv"]
 [ext_resource type="PackedScene" uid="uid://bjeyih3voierq" path="res://scenes/rails.tscn" id="10_7kp6p"]
 [ext_resource type="PackedScene" uid="uid://c6qa3duo78fe6" path="res://exports/rocks/rock_grassy.glb" id="10_ett8r"]
+[ext_resource type="PackedScene" uid="uid://cfaqvg4g1tf74" path="res://scenes/score_ui.tscn" id="11_b1dhu"]
+[ext_resource type="PackedScene" uid="uid://dyqhbulvdxxq8" path="res://scenes/houses/house_1.tscn" id="13_ett8r"]
+[ext_resource type="Texture2D" uid="uid://ckqmn8475evya" path="res://PSX Villager Woman (1)/N64Tree/TreeLeave_TEX.png" id="14_fjgdw"]
+[ext_resource type="ArrayMesh" uid="uid://uxfnvp3j5sct" path="res://PSX Villager Woman (1)/N64Tree/N64Tree.obj" id="15_oe2n4"]
+[ext_resource type="PackedScene" uid="uid://piuicdt2edyf" path="res://scenes/houses/house_2.tscn" id="16_oe2n4"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_7kp6p"]
 friction = 0.0
@@ -56,6 +61,9 @@ data = PackedVector3Array(-0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0
 
 [sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_ett8r"]
 data = PackedVector3Array(-0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_b1dhu"]
+albedo_texture = ExtResource("14_fjgdw")
 
 [node name="Level 1 map" type="SubViewportContainer"]
 material = ExtResource("1_7qrjt")
@@ -633,7 +641,7 @@ transform = Transform3D(-0.761459, 0, 0.648213, 0, 1, 0, -0.648213, 0, -0.761459
 transform = Transform3D(0.508625, -0.713632, -0.481694, 0.85432, 0.348817, 0.38531, -0.106946, -0.607499, 0.787088, -14.9838, -3.85491, -11.8072)
 
 [node name="rock_grassy7" parent="SubViewport/rock" instance=ExtResource("10_ett8r")]
-transform = Transform3D(0.0383077, -0.778595, 0.626357, 0.894959, 0.305558, 0.32509, -0.444501, 0.54811, 0.708515, -17.5701, -3.74193, -5.03299)
+transform = Transform3D(0.0383077, -0.778595, 0.626357, 0.894959, 0.305558, 0.32509, -0.444501, 0.54811, 0.708515, -17.5701, -3.74193, -12.2797)
 
 [node name="rock_grassy8" parent="SubViewport/rock" instance=ExtResource("10_ett8r")]
 transform = Transform3D(0.74921, 0, 0.662333, 0, 1, 0, -0.662333, 0, 0.74921, -18.3659, -3.93484, -8.4373)
@@ -649,6 +657,108 @@ transform = Transform3D(0.0627409, 4.53732, -6.52999, 7.83604, -1.1446, -0.72003
 
 [node name="rock6" parent="SubViewport/rock" instance=ExtResource("9_aaphv")]
 transform = Transform3D(-2.14047, 0, -0.342887, 0, 2.16776, 0, 0.342887, 0, -2.14047, -29.3791, -4.46003, -21.5028)
+
+[node name="rock7" parent="SubViewport/rock" instance=ExtResource("9_aaphv")]
+transform = Transform3D(0.125532, -0.126761, 0.983958, -0.978439, 0.148142, 0.143912, -0.164008, -0.980809, -0.105431, -87.9299, -3.10399, -0.228767)
+
+[node name="rock8" parent="SubViewport/rock" instance=ExtResource("9_aaphv")]
+transform = Transform3D(1.70643, -0.780222, 2.07128, 1.16213, 2.54172, 0, -1.88372, 0.861281, 1.87634, -12.5211, -3.54981, -10.7796)
+
+[node name="rock9" parent="SubViewport/rock" instance=ExtResource("9_aaphv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.2869, -4.13635, -4.54078)
+
+[node name="rock_grassy11" parent="SubViewport/rock" instance=ExtResource("10_ett8r")]
+transform = Transform3D(-1.37503, 1.03696, -2.05789, -1.50334, 1.41254, 1.71627, 1.74647, 2.03232, -0.142873, -4.712, -3.54981, -7.98362)
+
+[node name="rock8" parent="SubViewport/rock/rock_grassy11" instance=ExtResource("9_aaphv")]
+transform = Transform3D(-0.200844, -2.0474, 1.89174, 0.219897, 1.87909, 2.05706, -2.77888, 0.296671, 0.026052, -5.9486, 3.17043, -7.24051)
+
+[node name="rock9" parent="SubViewport/rock/rock_grassy11" instance=ExtResource("9_aaphv")]
+transform = Transform3D(1.21176, 0.742518, -1.15233, -1.27363, 1.17865, -0.579836, 0.50702, 1.18617, 1.29749, -2.87891, -0.0309772, -2.28972)
+
+[node name="rock_grassy11" parent="SubViewport/rock/rock_grassy11" instance=ExtResource("10_ett8r")]
+transform = Transform3D(0.619815, 0.266645, -2.59723, -0.394188, 2.64837, 0.177823, 2.58096, 0.34045, 0.650883, -4.62402, 3.14628, -8.96123)
+
+[node name="special rock" parent="SubViewport/rock" instance=ExtResource("9_aaphv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -94.9547, -3.54981, -3.26927)
+
+[node name="rock" parent="SubViewport/rock/special rock" instance=ExtResource("9_aaphv")]
+transform = Transform3D(0.988132, 0, -0.153607, 0, 1, 0, 0.153607, 0, 0.988132, 91.3708, -0.509409, -10.9457)
+
+[node name="rock_grassy" parent="SubViewport/rock/special rock" instance=ExtResource("10_ett8r")]
+transform = Transform3D(-0.377352, 0.926069, -0.00168389, 0.85432, 0.348817, 0.38531, 0.357411, 0.143959, -0.922786, 98.1524, -0.221569, -9.29237)
+
+[node name="rock_grassy2" parent="SubViewport/rock/special rock" instance=ExtResource("10_ett8r")]
+transform = Transform3D(0.366531, -0.918996, -0.145263, 0.894959, 0.305558, 0.32509, -0.254369, -0.24916, 0.93446, 102.682, -0.683249, -8.06701)
+
+[node name="rock_grassy3" parent="SubViewport/rock/special rock" instance=ExtResource("10_ett8r")]
+transform = Transform3D(0.988132, 0, -0.153607, 0, 1, 0, 0.153607, 0, 0.988132, 104.794, -0.876159, -10.8533)
+
+[node name="rock2" parent="SubViewport/rock/special rock" instance=ExtResource("9_aaphv")]
+transform = Transform3D(0.979834, 0, 0.199812, 0, 1, 0, -0.199812, 0, 0.979834, 100.253, -0.819468, -11.0585)
+
+[node name="rock_grassy4" parent="SubViewport/rock/special rock" instance=ExtResource("10_ett8r")]
+transform = Transform3D(2.02925, 0.990695, -1.24622, -1.13155, 2.31776, -1.96523e-08, 1.11988, 0.546736, 2.25817, 111.688, -0.311639, -15.6019)
+
+[node name="rock_grassy5" parent="SubViewport/rock/special rock" instance=ExtResource("10_ett8r")]
+transform = Transform3D(7.12744, 0, 3.52585, 0, 7.95186, 0, -3.52585, 0, 7.12744, 122.296, -0.662899, -17.4757)
+
+[node name="rock3" parent="SubViewport/rock/special rock" instance=ExtResource("9_aaphv")]
+transform = Transform3D(1.64415, 0, 1.41279, 0, 2.16776, 0, -1.41279, 0, 1.64415, 115.493, -0.82669, -8.56853)
+
+[node name="rock4" parent="SubViewport/rock/special rock" instance=ExtResource("9_aaphv")]
+transform = Transform3D(-0.652852, 0, 0.757485, 0, 1, 0, -0.757485, 0, -0.652852, 174.26, -0.509409, -0.85514)
+
+[node name="rock_grassy6" parent="SubViewport/rock/special rock" instance=ExtResource("10_ett8r")]
+transform = Transform3D(0.519016, -0.611847, -0.596879, 0.85432, 0.348817, 0.38531, -0.0275485, -0.709908, 0.703755, 170.168, -0.221569, -6.50995)
+
+[node name="rock_grassy7" parent="SubViewport/rock/special rock" instance=ExtResource("10_ett8r")]
+transform = Transform3D(0.106131, -0.853548, 0.510091, 0.894959, 0.305558, 0.32509, -0.433341, 0.422008, 0.796319, 167.685, -0.108589, -7.37416)
+
+[node name="rock_grassy8" parent="SubViewport/rock/special rock" instance=ExtResource("10_ett8r")]
+transform = Transform3D(0.842057, 0, 0.539389, 0, 1, 0, -0.539389, 0, 0.842057, 166.308, -0.301499, -3.69956)
+
+[node name="rock5" parent="SubViewport/rock/special rock" instance=ExtResource("9_aaphv")]
+transform = Transform3D(0.601759, 0, 0.798678, 0, 1, 0, -0.798678, 0, 0.601759, 162.771, -0.244809, -0.846025)
+
+[node name="rock_grassy9" parent="SubViewport/rock/special rock" instance=ExtResource("10_ett8r")]
+transform = Transform3D(-0.819274, -0.399973, 2.41272, -1.13155, 2.31776, -2.6726e-08, -2.16813, -1.0585, -0.91169, 155.771, -0.311639, -10.4797)
+
+[node name="rock_grassy10" parent="SubViewport/rock/special rock" instance=ExtResource("10_ett8r")]
+transform = Transform3D(0.269487, 5.47104, -5.7643, 7.83604, -1.1446, -0.72003, -1.32512, -5.65594, -5.43014, 140.49, -0.662899, -16.8598)
+
+[node name="rock6" parent="SubViewport/rock/special rock" instance=ExtResource("9_aaphv")]
+transform = Transform3D(-2.16774, 0, -0.0100271, 0, 2.16776, 0, 0.0100271, 0, -2.16774, 157.433, -0.82669, -18.3017)
+
+[node name="rock7" parent="SubViewport/rock/special rock" instance=ExtResource("9_aaphv")]
+transform = Transform3D(0.149235, 0.0254026, 0.988476, -0.978439, 0.148142, 0.143912, -0.142779, -0.98864, 0.0469628, 96.309, 0.529353, -6.27394)
+
+[node name="rock8" parent="SubViewport/rock/special rock" instance=ExtResource("9_aaphv")]
+transform = Transform3D(1.97553, -0.903261, 1.75848, 1.16213, 2.54171, -2.15287e-08, -1.59924, 0.731212, 2.17224, 172.444, 0.0835316, -5.11623)
+
+[node name="rock9" parent="SubViewport/rock/special rock" instance=ExtResource("9_aaphv")]
+transform = Transform3D(0.988132, 0, -0.153607, 0, 1, 0, 0.153607, 0, 0.988132, 172.705, -0.503012, -0.0678842)
+
+[node name="rock_grassy11" parent="SubViewport/rock/special rock" instance=ExtResource("10_ett8r")]
+transform = Transform3D(-1.62698, 0.712475, -2.01152, -1.50334, 1.41254, 1.71627, 1.51453, 2.16749, -0.457282, 179.555, 0.0835316, -8.16791)
+
+[node name="rock8" parent="SubViewport/rock/special rock/rock_grassy11" instance=ExtResource("9_aaphv")]
+transform = Transform3D(-0.200844, -2.0474, 1.89174, 0.219897, 1.87909, 2.05706, -2.77888, 0.296671, 0.026052, -5.9486, 3.17043, -7.24051)
+
+[node name="rock9" parent="SubViewport/rock/special rock/rock_grassy11" instance=ExtResource("9_aaphv")]
+transform = Transform3D(1.21176, 0.742518, -1.15233, -1.27363, 1.17865, -0.579836, 0.507019, 1.18618, 1.29749, -1.6052, 1.45121, -2.39392)
+
+[node name="rock_grassy11" parent="SubViewport/rock/special rock/rock_grassy11" instance=ExtResource("10_ett8r")]
+transform = Transform3D(0.619815, 0.266645, -2.59723, -0.394188, 2.64837, 0.177823, 2.58096, 0.34045, 0.650883, -4.62402, 3.14628, -8.96123)
+
+[node name="special rock" parent="SubViewport/rock/special rock" instance=ExtResource("9_aaphv")]
+transform = Transform3D(0.988132, 0, -0.153607, 0, 1, 0, 0.153607, 0, 0.988132, 89.8347, 0.0835316, -10.3574)
+
+[node name="ScoreUI" parent="SubViewport" instance=ExtResource("11_b1dhu")]
+offset_left = 6.0
+offset_top = 1.0
+offset_right = 306.0
+offset_bottom = 401.0
 
 [node name="Suspicious Car" parent="." groups=["Rail", "rails"] instance=ExtResource("9_v4rjv")]
 transform = Transform3D(1.71726e-07, 0.865632, -2.01967, -1.76565e-07, -2.01967, -0.865632, -2.19736, 2.29937e-07, -8.82827e-08, -90.3024, -2.10163, -0.360008)
@@ -680,5 +790,16 @@ transform = Transform3D(0.384465, -1.13145, -0.38022, 0.443815, 0.506324, -1.057
 
 [node name="StaticBody3D" parent="." instance=ExtResource("10_7kp6p")]
 transform = Transform3D(0.999815, -0.0192672, 0, 0.0192672, 0.999815, 0, 0, 0, 1, 19.1376, -3.26965, 71.4898)
+
+[node name="House" parent="." instance=ExtResource("13_ett8r")]
+transform = Transform3D(0.899054, 0, -0.437838, 0, 1, 0, 0.437838, 0, 0.899054, -43.407, -4.1852, -9.35702)
+
+[node name="N64Tree" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.91037, -4.14304, -2.01231)
+material_override = SubResource("StandardMaterial3D_b1dhu")
+mesh = ExtResource("15_oe2n4")
+
+[node name="House2" parent="." instance=ExtResource("16_oe2n4")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.5554, -4.1852, -7.33019)
 
 [editable path="SubViewport/Player"]
