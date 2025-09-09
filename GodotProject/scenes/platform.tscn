@@ -1,9 +1,8 @@
 [gd_scene load_steps=5 format=3 uid="uid://ct2ugxt4bnw0f"]
 
-[ext_resource type="Script" uid="uid://djka2s6cx5qeg" path="res://rigid_body_3d.gd" id="1_ba0x2"]
+[ext_resource type="Script" path="res://rigid_body_3d.gd" id="1_ba0x2"]
 [ext_resource type="PackedScene" uid="uid://kijk2sngvc0y" path="res://scenes/barrel.tscn" id="2_nlgqw"]
-
-[sub_resource type="BoxMesh" id="BoxMesh_nlgqw"]
+[ext_resource type="PackedScene" uid="uid://dp3h7whn6p70d" path="res://scenes/crate_lid.tscn" id="3_507ja"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_nlgqw"]
 size = Vector3(2.77106, 0.098053, 2.58276)
@@ -18,12 +17,11 @@ shake_intensity = 0.25
 shake_duration = 0.3
 fall_delay = 0.2
 
-[node name="CSGMesh3D" type="CSGMesh3D" parent="."]
-transform = Transform3D(2.95641, 0, 0, 0, 0.110419, 0, 0, 0, 2.61881, 0, 0, 0)
-mesh = SubResource("BoxMesh_nlgqw")
-
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0520935, -0.00495911, 0.0733643)
+transform = Transform3D(0.54141, 0, 0, 0, 0.54141, 0, 0, 0, 0.54141, 0.0485515, -0.017073, 0.0618518)
 shape = SubResource("BoxShape3D_nlgqw")
+
+[node name="Crate_lid" parent="." instance=ExtResource("3_507ja")]
+transform = Transform3D(2.66586, 0, 0, 0, 1.03064, 0, 0, 0, 2.63704, 0.0401881, -0.0456764, 0.0346685)
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]

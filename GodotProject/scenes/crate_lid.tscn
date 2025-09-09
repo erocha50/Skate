@@ -1,0 +1,51 @@
+[gd_scene load_steps=6 format=4 uid="uid://dp3h7whn6p70d"]
+
+[ext_resource type="Texture2D" uid="uid://cq0hvobhyfkox" path="res://PSX Dungeon Boxes and Barrels Pack/Models/Crates_and_barrels_glb_Crates_and_barrels.png" id="1_2yxel"]
+[ext_resource type="Texture2D" uid="uid://cw77o52wubybv" path="res://PSX Dungeon Boxes and Barrels Pack/Models/Crates_and_barrels_glb_Crates_and_barrels_normal.png" id="2_dmtgx"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hb3h2"]
+resource_name = "Crates_and_Barrels"
+cull_mode = 2
+albedo_texture = ExtResource("1_2yxel")
+roughness = 0.0
+normal_enabled = true
+normal_scale = 1.5
+normal_texture = ExtResource("2_dmtgx")
+texture_filter = 2
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_4eqsa"]
+_surfaces = [{
+"aabb": AABB(-0.276301, -6.17581e-09, -0.276301, 0.552602, 0.0552602, 0.552602),
+"format": 34896613377,
+"index_count": 36,
+"index_data": PackedByteArray("AAABAAIAAAADAAEABAACAAEAAwAEAAEABQAAAAIAAwAAAAUABAAGAAIABQACAAYAAwAHAAQAAwAFAAcABwAGAAQABwAFAAYA"),
+"name": "Crates_and_Barrels",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 8,
+"vertex_data": PackedByteArray("AAAAAP//AAAAAP//AAAAAAAA/////wAAAAAAAAAAAAD/////AAAAAP//AAD//wAA////////AAD//wAAAAAAAA==")
+}]
+blend_shape_mode = 0
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_6a4es"]
+resource_name = "Crates_and_barrels_glb_Cube_004"
+_surfaces = [{
+"aabb": AABB(-0.276301, -6.17581e-09, -0.276301, 0.552602, 0.0552602, 0.552602),
+"attribute_data": PackedByteArray("xv7d/9CABvfG/gb30IDd/8D+3v/JgAj3wP4I98mA3v/A/tv/yYAE98D+BPfJgNv/xv7c/9CABffG/gX30IDc//794YFkgnv9ZILhgf79e/3+/eGBZIJ7/WSC4YH+/Xv9"),
+"format": 34896613399,
+"index_count": 36,
+"index_data": PackedByteArray("AAABAAIAAAADAAEABAAFAAYABAAHAAUACAAJAAoACAALAAkADAANAA4ADAAPAA0AEAARABIAEAATABEAFAAVABYAFAAXABUA"),
+"material": SubResource("StandardMaterial3D_hb3h2"),
+"name": "Crates_and_Barrels",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 24,
+"vertex_data": PackedByteArray("AAAAAP///78AAP//AAD/vwAA//////+/AAAAAAAA/78AAAAAAAD///////8AAP//AAD//wAA/////wAAAAD/////AAAAAP+//////////7//////AAD/v///AAD///+///8AAP//AIAAAP////8AgP///////wCAAAAAAP//AIAAAAAAAAD/////AAD///////8AAAAA//8AAAAA//////////8AAP+/AAD//////78AAP//AAD/v/////////+//3////9/////f////3////9/////f////3////9/////fwAA/38AAP9/AAD/fwAA/3////9/////f////3////9//z//f/8//3//P/9//z////9/////f////3////9/")
+}]
+blend_shape_mode = 0
+shadow_mesh = SubResource("ArrayMesh_4eqsa")
+
+[node name="Crate_lid" type="MeshInstance3D"]
+transform = Transform3D(3.31898, 0, 0, 0, 3.31898, 0, 0, 0, 3.31898, 0, 0, 0)
+mesh = SubResource("ArrayMesh_6a4es")
+skeleton = NodePath("")

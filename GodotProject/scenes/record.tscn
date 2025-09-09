@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://rf445y7hex4h"]
+
+[ext_resource type="PackedScene" uid="uid://cu6j5k4g0g6ku" path="res://scenes/PS1 PSX Vinyl Records Asset Pack/Assets/VinylRecord_SM.fbx" id="1_akj7i"]
+
+[node name="VinylRecord_SM" instance=ExtResource("1_akj7i")]
