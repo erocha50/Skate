@@ -1,4 +1,4 @@
-[gd_scene load_steps=32 format=3 uid="uid://cjlxpwx372yfr"]
+[gd_scene load_steps=31 format=3 uid="uid://cjlxpwx372yfr"]
 
 [ext_resource type="Material" uid="uid://c3vcdjd1g54y0" path="res://scenes/WorldShader.tres" id="1_7qrjt"]
 [ext_resource type="PackedScene" uid="uid://cb6aerxcrbdkf" path="res://psx_tree_3.tscn" id="3_qvutf"]
@@ -6,30 +6,23 @@
 [ext_resource type="PackedScene" uid="uid://dpvttgw2t5c48" path="res://psx_tree_2.tscn" id="5_7kp6p"]
 [ext_resource type="PackedScene" uid="uid://bmr1d5gach4ip" path="res://scenes/player.tscn" id="5_v4rjv"]
 [ext_resource type="PackedScene" uid="uid://bkb0bgwpuuc4n" path="res://scenes/camera_controller.tscn" id="5_vke4u"]
-[ext_resource type="Texture2D" uid="uid://tgl58c84vl1c" path="res://grass 11 - 256x256.png" id="7_b1dhu"]
+[ext_resource type="Texture2D" uid="uid://l3vlpftb2mwh" path="res://Metro_PSX/Metro_PSX/Models/Metro_metal_02.png" id="7_qvutf"]
 [ext_resource type="Script" uid="uid://b1wsjs20ruuk3" path="res://scenes/spot_light_3d.gd" id="7_vke4u"]
-[ext_resource type="PackedScene" uid="uid://vhe1h3wglknj" path="res://scenes/freezeblocks.tscn" id="8_v1bxa"]
 [ext_resource type="PackedScene" uid="uid://cicnf2v8iev2x" path="res://exports/rocks/rock.glb" id="9_aaphv"]
 [ext_resource type="PackedScene" uid="uid://boi6s5r66rabr" path="res://Suspicious Car 01/Suspicious Car.blend" id="9_v4rjv"]
 [ext_resource type="PackedScene" uid="uid://bjeyih3voierq" path="res://scenes/rails.tscn" id="10_7kp6p"]
 [ext_resource type="PackedScene" uid="uid://c6qa3duo78fe6" path="res://exports/rocks/rock_grassy.glb" id="10_ett8r"]
+[ext_resource type="PackedScene" uid="uid://cfaqvg4g1tf74" path="res://scenes/score_ui.tscn" id="11_b1dhu"]
 [ext_resource type="PackedScene" uid="uid://dyqhbulvdxxq8" path="res://scenes/houses/house_1.tscn" id="13_ett8r"]
 [ext_resource type="Texture2D" uid="uid://ckqmn8475evya" path="res://PSX Villager Woman (1)/N64Tree/TreeLeave_TEX.png" id="14_fjgdw"]
 [ext_resource type="ArrayMesh" uid="uid://uxfnvp3j5sct" path="res://PSX Villager Woman (1)/N64Tree/N64Tree.obj" id="15_oe2n4"]
 [ext_resource type="PackedScene" uid="uid://piuicdt2edyf" path="res://scenes/houses/house_2.tscn" id="16_oe2n4"]
-[ext_resource type="PackedScene" uid="uid://ct2ugxt4bnw0f" path="res://scenes/platform.tscn" id="18_v1bxa"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_7kp6p"]
 friction = 0.0
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v4rjv"]
-albedo_texture = ExtResource("7_b1dhu")
-uv1_triplanar = true
-uv1_triplanar_sharpness = 0.57435
-uv1_world_triplanar = true
-uv2_scale = Vector3(3, 3, 3)
-uv2_triplanar = true
-uv2_world_triplanar = true
+albedo_texture = ExtResource("7_qvutf")
 
 [sub_resource type="BoxMesh" id="BoxMesh_8ekoj"]
 material = SubResource("StandardMaterial3D_v4rjv")
@@ -596,9 +589,6 @@ skeleton = NodePath("../../..")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="SubViewport/Area3D/MeshInstance3D/StaticBody3D"]
 shape = SubResource("ConcavePolygonShape3D_7qrjt")
 
-[node name="Freezeblocks" parent="SubViewport/Area3D" instance=ExtResource("8_v1bxa")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -80.0185, 0.268026, -0.252169)
-
 [node name="Node3D" type="Node3D" parent="SubViewport"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="SubViewport/Node3D"]
@@ -764,6 +754,12 @@ transform = Transform3D(0.619815, 0.266645, -2.59723, -0.394188, 2.64837, 0.1778
 [node name="special rock" parent="SubViewport/rock/special rock" instance=ExtResource("9_aaphv")]
 transform = Transform3D(0.988132, 0, -0.153607, 0, 1, 0, 0.153607, 0, 0.988132, 89.8347, 0.0835316, -10.3574)
 
+[node name="ScoreUI" parent="SubViewport" instance=ExtResource("11_b1dhu")]
+offset_left = 6.0
+offset_top = 1.0
+offset_right = 306.0
+offset_bottom = 401.0
+
 [node name="Suspicious Car" parent="." groups=["Rail", "rails"] instance=ExtResource("9_v4rjv")]
 transform = Transform3D(1.71726e-07, 0.865632, -2.01967, -1.76565e-07, -2.01967, -0.865632, -2.19736, 2.29937e-07, -8.82827e-08, -90.3024, -2.10163, -0.360008)
 
@@ -805,8 +801,5 @@ mesh = ExtResource("15_oe2n4")
 
 [node name="House2" parent="." instance=ExtResource("16_oe2n4")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.5554, -4.1852, -7.33019)
-
-[node name="Platform" parent="." instance=ExtResource("18_v1bxa")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -44.5156, -4.06439, -0.224854)
 
 [editable path="SubViewport/Player"]

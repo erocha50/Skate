@@ -21,29 +21,11 @@ var selected_rotation_speed = 3.0
 var track_data = {}
 
 func _ready():
-	# Setup materials
-	setup_disc_material()
-	
 	# Connect collision signals
 	if collision_body:
 		collision_body.input_event.connect(_on_input_event)
 		collision_body.mouse_entered.connect(_on_mouse_entered)
 		collision_body.mouse_exited.connect(_on_mouse_exited)
-
-func setup_disc_material():
-	if disc_mesh:
-		# Create disc material
-		var disc_material = StandardMaterial3D.new()
-		disc_material.albedo_color = Color(0.1, 0.1, 0.1)
-		disc_material.metallic = 0.8
-		disc_material.roughness = 0.2
-		disc_mesh.material_override = disc_material
-	
-	if album_art:
-		# Create album art material
-		var art_material = StandardMaterial3D.new()
-		art_material.flags_unshaded = true
-		album_art.material_override = art_material
 
 func setup_disc(data: Dictionary, index: int):
 	disc_index = index
@@ -53,37 +35,13 @@ func setup_disc(data: Dictionary, index: int):
 	if disc_label:
 		disc_label.text = data.title
 	
-	# Load album art texture
-	if ResourceLoader.exists(data.album_art) and album_art:
+	# Load album art texture if available
+	if data.has("album_art") and ResourceLoader.exists(data.album_art) and album_art:
 		var texture = load(data.album_art)
-		var material = album_art.material_override as StandardMaterial3D
-		if material:
-			material.albedo_texture = texture
-	else:
-		# Create default texture with track info
-		create_default_album_art()
-
-func create_default_album_art():
-	if not album_art:
-		return
-		
-	# Create a simple colored texture as fallback
-	var image = Image.create(512, 512, false, Image.FORMAT_RGB8)
-	var colors = [
-		Color.CYAN,
-		Color.MAGENTA, 
-		Color.YELLOW,
-		Color.GREEN,
-		Color.RED
-	]
-	var color = colors[disc_index % colors.size()]
-	image.fill(color)
-	
-	var texture = ImageTexture.new()
-	texture.create_from_image(image)
-	
-	var material = album_art.material_override as StandardMaterial3D
-	if material:
+		var material = album_art.get_surface_override_material(0)
+		if not material:
+			material = StandardMaterial3D.new()
+			album_art.set_surface_override_material(0, material)
 		material.albedo_texture = texture
 
 # This method is expected by the main script
@@ -120,8 +78,6 @@ func _on_input_event(camera, event, position, normal, shape_idx):
 func _on_mouse_entered():
 	is_hovered = true
 	disc_hovered.emit(disc_index)
-	
-	# Add glow effect
 	add_glow_effect()
 
 func _on_mouse_exited():
@@ -141,14 +97,17 @@ func add_glow_effect():
 		return
 		
 	# Create emission for hover effect
-	var material = disc_mesh.material_override as StandardMaterial3D
-	if material:
-		material.emission_enabled = true
-		material.emission = Color(0.2, 0.4, 1.0) * 0.3
+	var material = disc_mesh.get_surface_override_material(0)
+	if not material:
+		material = StandardMaterial3D.new()
+		disc_mesh.set_surface_override_material(0, material)
+	
+	material.emission_enabled = true
+	material.emission = Color(0.2, 0.4, 1.0) * 0.3
 
 func remove_glow_effect():
 	if not is_selected and disc_mesh:
-		var material = disc_mesh.material_override as StandardMaterial3D
+		var material = disc_mesh.get_surface_override_material(0)
 		if material:
 			material.emission_enabled = false
 
@@ -157,10 +116,13 @@ func add_selection_effect():
 		return
 		
 	# Create stronger emission for selection
-	var material = disc_mesh.material_override as StandardMaterial3D
-	if material:
-		material.emission_enabled = true
-		material.emission = Color(1.0, 0.6, 0.2) * 0.5
+	var material = disc_mesh.get_surface_override_material(0)
+	if not material:
+		material = StandardMaterial3D.new()
+		disc_mesh.set_surface_override_material(0, material)
+	
+	material.emission_enabled = true
+	material.emission = Color(1.0, 0.6, 0.2) * 0.5
 	
 	# Make label more prominent
 	if disc_label:
@@ -168,7 +130,7 @@ func add_selection_effect():
 
 func remove_selection_effect():
 	if not is_hovered and disc_mesh:
-		var material = disc_mesh.material_override as StandardMaterial3D
+		var material = disc_mesh.get_surface_override_material(0)
 		if material:
 			material.emission_enabled = false
 	

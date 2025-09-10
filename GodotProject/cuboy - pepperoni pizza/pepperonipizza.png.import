@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dh64raklb6ihf"
-path.s3tc="res://.godot/imported/Crates_and_barrels.png-1fc198631395ede262b0b4ae705abdc3.s3tc.ctex"
+uid="uid://dhnb0utcto0yy"
+path.s3tc="res://.godot/imported/pepperonipizza.png-5b6dfcdefcb7e9504a8ed740d0aa4c74.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://PSX Dungeon Boxes and Barrels Pack/Textures/Crates_and_barrels.png"
-dest_files=["res://.godot/imported/Crates_and_barrels.png-1fc198631395ede262b0b4ae705abdc3.s3tc.ctex"]
+source_file="res://cuboy - pepperoni pizza/pepperonipizza.png"
+dest_files=["res://.godot/imported/pepperonipizza.png-5b6dfcdefcb7e9504a8ed740d0aa4c74.s3tc.ctex"]
 
 [params]
 

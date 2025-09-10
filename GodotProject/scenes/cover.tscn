@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=4 uid="uid://bepqc04l56acj"]
+[gd_scene load_steps=8 format=4 uid="uid://cnvc1srwcaqvd"]
 
 [ext_resource type="Texture2D" uid="uid://cfqkdvvfide48" path="res://scenes/PS1 PSX Vinyl Records Asset Pack/Covers Textures/AC-DC_T.png" id="1_j4as2"]
 
@@ -12,7 +12,7 @@ albedo_color = Color(0.735357, 0.735357, 0.735357, 0.5)
 emission_enabled = true
 emission = Color(0, 0, 0, 0)
 
-[sub_resource type="ArrayMesh" id="ArrayMesh_yxjtt"]
+[sub_resource type="ArrayMesh" id="ArrayMesh_j4as2"]
 _surfaces = [{
 "aabb": AABB(-0.162, -0.003, 0, 0.324, 0.006, 0.324),
 "format": 34359742465,
@@ -42,7 +42,7 @@ _surfaces = [{
 "vertex_data": PackedByteArray("VOMlPqabRDsAAAAAVOMlvqabRDsAAAAAVOMlvqabRLsAAAAAVOMlPqabRLsAAAAAVOMlPqabRDtU46U+VOMlPqabRLtU46U+VOMlvqabRLtU46U+VOMlvqabRDtU46U+VOMlPqabRLtU46U+VOMlPqabRLsAAAAAVOMlvqabRLsAAAAAVOMlvqabRLtU46U+AF4kvlJJHTuvlKU+AF4kvlJJHTv2SB06AF4kvlJJHbv2SB06AF4kvlJJHbuvlKU+VOMlvqabRDtU46U+VOMlvqabRDsAAAAAVOMlPqabRDsAAAAAVOMlPqabRDtU46U+VOMlvqabRLtU46U+VOMlvqabRLsAAAAAVOMlvqabRDsAAAAAVOMlvqabRDtU46U+VOMlPlJJHTtRSR06VOMlPqabRDsAAAAAVOMlPqabRLsAAAAAVOMlPlJJHTuvlKU+VOMlPlJJHbtRSR06VOMlPqabRDtU46U+VOMlPlJJHbuvlKU+VOMlPqabRLtU46U+AF4kvlJJHTv2SB06VOMlPlJJHTtRSR06VOMlPlJJHbtRSR06AF4kvlJJHbv2SB06AF4kvlJJHTuvlKU+VOMlPlJJHTuvlKU+VOMlPlJJHTtRSR06AF4kvlJJHTv2SB06AF4kvlJJHbuvlKU+VOMlPlJJHbuvlKU+VOMlPlJJHTuvlKU+AF4kvlJJHTuvlKU+AF4kvlJJHbuvlKU+AF4kvlJJHbv2SB06VOMlPlJJHbtRSR06VOMlPlJJHbuvlKU+/////////7//////////v/////////+//////////7//f/9//38AgP9//3//fwCA/3//f/9/AID/f/9//38AgP9/AAD///+//38AAP///7//fwAA////v/9/AAD///+/////f/////////9//////////3//////////f///////f///AAD/v/9///8AAP+//3///wAA/7//f///AAD/vwAA/3//fwCAAAD/f/9/AIAAAP9//38AgAAA/3//fwCA////f/9///////9//3/+/////3//f/7/////f/9//v////9//3/+/////3//f/7/////f/9///////9//3/+//9//3////+//3//f////7//f/9/////v/9//3////+//38AAP///7//fwAA////v/9/AAD///+//38AAP///7///////3//////////f/////////9//////////3////9//////////3//////////f/////////9/////////")
 }]
 blend_shape_mode = 0
-shadow_mesh = SubResource("ArrayMesh_yxjtt")
+shadow_mesh = SubResource("ArrayMesh_j4as2")
 
 [sub_resource type="Animation" id="Animation_8ngex"]
 resource_name = "Take 001"

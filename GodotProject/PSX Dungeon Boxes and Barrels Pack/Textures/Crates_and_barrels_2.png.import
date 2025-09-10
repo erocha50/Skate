@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bsdje1lhc8wba"
-path.s3tc="res://.godot/imported/Crates_and_barrels_2.png-136642ef5bdbb8de48e4ea8673a3b57d.s3tc.ctex"
+path.s3tc="res://.godot/imported/Crates_and_barrels_2.png-5980962614e663664782567a42c585e2.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://PSX Dungeon Boxes and Barrels Pack/textures/Crates_and_barrels_2.png"
-dest_files=["res://.godot/imported/Crates_and_barrels_2.png-136642ef5bdbb8de48e4ea8673a3b57d.s3tc.ctex"]
+source_file="res://PSX Dungeon Boxes and Barrels Pack/Textures/Crates_and_barrels_2.png"
+dest_files=["res://.godot/imported/Crates_and_barrels_2.png-5980962614e663664782567a42c585e2.s3tc.ctex"]
 
 [params]
 
