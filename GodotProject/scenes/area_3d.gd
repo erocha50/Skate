@@ -13,7 +13,8 @@ var reset_duration: float = 1.0  # Time before block can be used again
 var bob_speed: float = 2.0
 var bob_height: float = 0.3
 var rotation_speed: float = 1.0
-var initial_y_position: float
+var initial_mesh_y_position: float
+var initial_collision_y_position: float
 var time_passed: float = 0.0
 
 func _ready():
@@ -22,9 +23,6 @@ func _ready():
 	
 	# Connect the body entered signal
 	body_entered.connect(_on_body_entered)
-	
-	# Store initial position for bobbing animation
-	initial_y_position = position.y
 	
 	# Create the block mesh if it doesn't exist
 	if not mesh_instance:
@@ -45,6 +43,10 @@ func _ready():
 	var box_shape = BoxShape3D.new()
 	box_shape.size = Vector3(1.0, 1.0, 1.0)
 	collision_shape.shape = box_shape
+	
+	# Store initial positions for bobbing animation AFTER creating the nodes
+	initial_mesh_y_position = mesh_instance.position.y
+	initial_collision_y_position = collision_shape.position.y
 	
 	# Set up materials
 	setup_materials()
@@ -79,11 +81,12 @@ func _physics_process(delta):
 	
 	# Only animate when not activated
 	if not is_activated:
-		# Bobbing animation
+		# Bobbing animation - apply to both mesh and collision shape
 		var bob_offset = sin(time_passed * bob_speed) * bob_height
-		position.y = initial_y_position + bob_offset
+		mesh_instance.position.y = initial_mesh_y_position + bob_offset
+		collision_shape.position.y = initial_collision_y_position + bob_offset
 		
-		# Horizontal rotation animation
+		# Rotation animation - apply only to mesh
 		mesh_instance.rotation.y = time_passed * rotation_speed
 
 func _on_body_entered(body):
@@ -117,10 +120,10 @@ func activate_block():
 	# Stop rotation when activated
 	mesh_instance.rotation.y = 0
 	
-	# Optional: Add scale animation for extra effect
+	# Optional: Add scale animation for extra effect (only to mesh)
 	var tween = create_tween()
-	tween.tween_property(self, "scale", Vector3.ONE * 1.2, 0.1)
-	tween.tween_property(self, "scale", Vector3.ONE, 0.1)
+	tween.tween_property(mesh_instance, "scale", Vector3.ONE * 1.2, 0.1)
+	tween.tween_property(mesh_instance, "scale", Vector3.ONE, 0.1)
 
 func reset_block():
 	print("FreezeBlock reset - ready for use")
@@ -129,5 +132,5 @@ func reset_block():
 	# Return to original material
 	mesh_instance.material_override = original_material
 	
-	# Reset scale just in case
-	scale = Vector3.ONE
+	# Reset mesh scale just in case
+	mesh_instance.scale = Vector3.ONE

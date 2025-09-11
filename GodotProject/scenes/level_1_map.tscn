@@ -7,7 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://bmr1d5gach4ip" path="res://scenes/player.tscn" id="5_v4rjv"]
 [ext_resource type="PackedScene" uid="uid://bkb0bgwpuuc4n" path="res://scenes/camera_controller.tscn" id="5_vke4u"]
 [ext_resource type="Texture2D" uid="uid://tgl58c84vl1c" path="res://grass 11 - 256x256.png" id="7_b1dhu"]
-[ext_resource type="Script" uid="uid://b1wsjs20ruuk3" path="res://scenes/spot_light_3d.gd" id="7_vke4u"]
+[ext_resource type="Script" path="res://scenes/spot_light_3d.gd" id="7_vke4u"]
 [ext_resource type="PackedScene" uid="uid://vhe1h3wglknj" path="res://scenes/freezeblocks.tscn" id="8_v1bxa"]
 [ext_resource type="PackedScene" uid="uid://cicnf2v8iev2x" path="res://exports/rocks/rock.glb" id="9_aaphv"]
 [ext_resource type="PackedScene" uid="uid://boi6s5r66rabr" path="res://Suspicious Car 01/Suspicious Car.blend" id="9_v4rjv"]
